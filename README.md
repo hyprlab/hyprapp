@@ -12,12 +12,6 @@
   <img src="https://img.shields.io/badge/docker-SQLite%20in%20one%20volume-blue" alt="Docker, SQLite in one volume">
 </p>
 
-Every Hyprlab web app is a Flask app in one Docker container with SQLite in
-one volume, and every one needs the same accounts, settings, layout and
-release process. This template has all of that built and running, taken from
-Hyprfeed's interface and Hylki's conventions, so a new app starts at the part
-that is actually new.
-
 ## What it starts with
 
 - **The shell**: a sidebar with a pinned head and foot, a sticky topbar with
