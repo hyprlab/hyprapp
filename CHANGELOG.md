@@ -21,6 +21,13 @@ All notable changes to Hyprapp are documented here. The format follows
   the left, with About pinned at its foot, and the chosen section fills the
   right. On a phone it opens as a list, and each section has a Back button
 
+### Fixed
+- `tools/release-notes.sh` builds the compare link when the origin remote uses
+  an SSH host alias (`git@github-hyprlab:...`) or an `ssh://` URL; it printed
+  a broken link before
+- The pre-commit hook allows committing the removal of CLAUDE.md from the
+  index, which it refused along with adding it
+
 ## [1.0.0] — 2026-09-24
 
 ### Added

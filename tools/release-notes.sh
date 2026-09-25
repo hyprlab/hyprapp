@@ -56,7 +56,7 @@ if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
         echo "### What's changed"
         echo
         git log --no-merges --format='- %s' "$prev..$TAG" | grep -v '^- chore(release)' || true
-        repo=$(git remote get-url origin 2>/dev/null | sed -E 's#^(git@github\.com:|https://github\.com/)##; s#\.git$##' || true)
+        repo=$(git remote get-url origin 2>/dev/null | sed -E 's#^(git@[^:]+:|ssh://git@[^/]+/|https://github\.com/)##; s#\.git$##' || true)
         if [ -n "$repo" ]; then
             echo
             echo "**Full changes:** https://github.com/$repo/compare/$prev...$TAG"
