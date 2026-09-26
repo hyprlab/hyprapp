@@ -20,11 +20,15 @@ All notable changes to Hyprapp are documented here. The format follows
 - Secondary text and the red of errors have more contrast, meeting WCAG AA
   in both themes; the fields for adding a user and the search box have
   labels a screen reader can read
+- Changing a password signs the account out everywhere else, remember-me
+  cookies included
 - Settings opens as a two-pane window: the sections are listed in a rail on
   the left, with About pinned at its foot, and the chosen section fills the
   right. On a phone it opens as a list, and each section has a Back button
 
 ### Fixed
+- `db.session.begin_nested()` rolls back under SQLite; the sqlite3 driver
+  committed a released savepoint
 - `tools/release-notes.sh` builds the compare link when the origin remote uses
   an SSH host alias (`git@github-hyprlab:...`) or an `ssh://` URL; it printed
   a broken link before

@@ -14,6 +14,8 @@ docker compose up -d
 
 Open `http://<host>:8100`. The first visit opens the setup wizard, which
 creates the admin account. There is no default account or password.
+Changing a password, in Settings > Account or by an admin's reset, signs the
+account out everywhere else; the session that changed it stays signed in.
 
 From a clone of the repository, `docker compose up -d --build` builds the
 image from source instead: `docker-compose.override.yml` is picked up

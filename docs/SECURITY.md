@@ -24,7 +24,7 @@ Only the latest stable release receives security fixes.
 | Clickjacking | `X-Frame-Options: DENY` |
 | Password guessing | Salted hashes (Werkzeug's scrypt/pbkdf2); a throttle of eight failures per account and address per fifteen minutes; optional Cloudflare Turnstile, turned on in Settings > Security only after a challenge passes with the new keys |
 | Open redirects | The post-sign-in `next` must be a same-site path |
-| Session theft | `HttpOnly` and `SameSite=Lax` cookies; `Secure` with `SESSION_COOKIE_SECURE=1` |
+| Session theft | `HttpOnly` and `SameSite=Lax` cookies; `Secure` with `SESSION_COOKIE_SECURE=1`; sign-in ids carry a stamp of the password, so changing or resetting it ends every other session and remember-me cookie of the account |
 | Reading other accounts' data | Every record route checks ownership and answers 404, not 403 |
 | A default password | There is none: the first account is created in the setup wizard |
 | Stale pages | HTML is served `no-store` |

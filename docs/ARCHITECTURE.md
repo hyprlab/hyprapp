@@ -36,7 +36,10 @@ work to its own container, not adding web workers against one SQLite file.
 
 **SQLite in WAL mode.** Readers don't wait for the writer, and
 `busy_timeout` makes a writer wait for the lock instead of failing. Foreign
-keys are switched on, which SQLite leaves off by default.
+keys are switched on, which SQLite leaves off by default. The sqlite3
+driver's own transaction handling is turned off on connect and SQLAlchemy
+emits `BEGIN` itself, because the driver's way breaks savepoints: releasing
+one would commit it. So `db.session.begin_nested()` rolls back as it should.
 
 **No migration framework.** Schema changes are steps in `_migrate()`: an
 `ALTER TABLE` guarded by a column check, run at every boot, safe to run twice.
