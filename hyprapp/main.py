@@ -14,8 +14,8 @@ Two shapes of route live here:
 
 Admin routes are grouped at the end behind ``_require_admin``.
 """
-from flask import Blueprint, abort, jsonify, render_template, request
-from flask_login import current_user, login_required
+from flask import Blueprint, abort, jsonify, render_template, request, session
+from flask_login import current_user, login_required, login_user
 from sqlalchemy import func, or_
 
 from . import __version__
@@ -259,8 +259,15 @@ def change_password():
     new = data.get("new", "")
     if len(new) < MIN_PASSWORD:
         return jsonify(error=f"New passwords need at least {MIN_PASSWORD} characters."), 400
-    current_user.set_password(new)
+    user = current_user._get_current_object()
+    user.set_password(new)
     db.session.commit()
+    # Every other session of this account ends with the old password; this
+    # one carries on under the new one.
+    csrf = session.get("_csrf")
+    login_user(user, remember=bool(request.cookies.get("remember_token")))
+    if csrf:
+        session["_csrf"] = csrf
     return jsonify(ok=True)
 
 

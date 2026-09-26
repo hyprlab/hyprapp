@@ -74,7 +74,14 @@ def create_app(config_class=Config) -> Flask:
 
     @login_manager.user_loader
     def load_user(user_id):
-        return db.session.get(User, int(user_id))
+        # "7.<password stamp>" (User.get_id): a sign-in from before the
+        # password changed is no longer anyone's.
+        raw_id, _, stamp = str(user_id).partition(".")
+        try:
+            user = db.session.get(User, int(raw_id))
+        except ValueError:
+            return None
+        return user if user is not None and stamp and user.password_stamp == stamp else None
 
     @login_manager.unauthorized_handler
     def unauthorized():
