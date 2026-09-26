@@ -17,6 +17,9 @@ All notable changes to Hyprapp are documented here. The format follows
   server. The TURNSTILE_* variables still work as a fresh-install default
 
 ### Changed
+- Secondary text and the red of errors have more contrast, meeting WCAG AA
+  in both themes; the fields for adding a user and the search box have
+  labels a screen reader can read
 - Settings opens as a two-pane window: the sections are listed in a rail on
   the left, with About pinned at its foot, and the chosen section fills the
   right. On a phone it opens as a list, and each section has a Back button
