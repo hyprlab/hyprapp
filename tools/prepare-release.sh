@@ -41,9 +41,8 @@ if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
     exit 1
 fi
 
-echo "==> tests and docs"
+echo "==> docs"
 python3 tools/check-docs.py
-if [ -x .venv/bin/python ]; then .venv/bin/python -m pytest -q; else python3 -m pytest -q; fi
 
 if [ "$CHANNEL" = beta ]; then
     # main stays on "## Unreleased" and the last stable version; the beta
@@ -74,6 +73,16 @@ PY
     python3 tools/check-docs.py
 else
     tools/bump-version.sh "$VERSION"
+fi
+
+# The tests run on the release as it will be tagged: its changelog section
+# is rendered in the About window, which main's Unreleased one never is.
+echo "==> tests, on the release as it will ship"
+if [ -x .venv/bin/python ]; then py=.venv/bin/python; else py=python3; fi
+if ! "$py" -m pytest -q; then
+    echo "Tests failed on v$VERSION as it would ship; nothing is committed." >&2
+    echo "Back out with: git checkout -- . && git checkout $branch" >&2
+    exit 1
 fi
 
 git add CHANGELOG.md "$INIT"
