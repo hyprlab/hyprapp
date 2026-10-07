@@ -28,8 +28,9 @@ asks. There are no automatic catch-up betas after a stable.
 tools/prepare-release.sh beta            # or give the version: beta X.Y.0-beta.K
 ```
 
-It runs the tests and the docs check, merges main into `beta` (creating the
-branch the first time), rebuilds the changelog section, commits
+It runs the docs check, merges main into `beta` (creating the branch the
+first time), rebuilds the changelog section, runs the tests on that result
+(the release as it will ship, its changelog rendered in About), commits
 `chore(release): X.Y.0-beta.K` and tags it. Then check:
 
 ```sh
