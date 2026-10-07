@@ -7,6 +7,8 @@ All notable changes to Hyprapp are documented here. The format follows
 ## Unreleased
 
 ### Added
+- A light and dark switch in the sidebar's footer, beside Settings, as well
+  as the one in the top bar
 - Reloading the page brings back the dialog that was open, as it was: the
   settings section and its scroll position, a record being written or edited,
   the search and its results, an open record. Arriving at the page any other
