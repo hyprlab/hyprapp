@@ -17,6 +17,10 @@ All notable changes to Hyprapp are documented here. The format follows
   server. The TURNSTILE_* variables still work as a fresh-install default
 
 ### Changed
+- In the light theme, the chosen row in the sidebar, settings and search is a
+  darker grey instead of yellow, keeping its yellow edge
+- The chosen option of a segmented control, such as the default view, is shown
+  in the yellow accent
 - Secondary text and the red of errors have more contrast, meeting WCAG AA
   in both themes; the fields for adding a user and the search box have
   labels a screen reader can read
