@@ -1,7 +1,7 @@
 # Design system
 
 The interface comes from Hyprfeed's "electric editorial" design: Inter
-everywhere, warm neutrals, and one accent color spent sparingly. Everything is
+everywhere, true neutral greys, and one accent color spent sparingly. Everything is
 in `static/css/app.css`, hand-written, in the order this page follows.
 
 ## Principles

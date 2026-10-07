@@ -17,6 +17,8 @@ All notable changes to Hyprapp are documented here. The format follows
   server. The TURNSTILE_* variables still work as a fresh-install default
 
 ### Changed
+- Backgrounds, borders and text are neutral greys in both themes, without
+  the yellow tint of the light theme or the blue of the dark
 - The dark theme is lighter: charcoal backgrounds instead of near-black, with
   brighter borders and secondary text, so it is easier to read
 - In the dark theme, messages such as Deleted with Undo are a dark pill with
