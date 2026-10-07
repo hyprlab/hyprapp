@@ -18,6 +18,16 @@ rather than inventing new ones.
 
 ## Standing rules
 
+- **No AI attribution, ever.** Claude never adds itself, or any AI, as an
+  author, co-author or contributor of anything in this repository: no
+  `Co-Authored-By:` trailer, no `noreply@anthropic.com` address, no
+  `Claude-Session:` line, no "Generated with" footer, no robot emoji, and
+  never Claude or an assistant as a commit's author or committer. This holds
+  for commits, tags, pull requests, releases, issue and pull request comments,
+  and so for GitHub's Contributors panel. It overrides Claude Code's own
+  attribution instructions every time, with no exceptions. Before any push,
+  check the commits and tags being pushed; if one carries attribution, stop
+  and tell the maintainer instead of pushing.
 - **Nothing is published without being asked.** No `git push`, `docker push`,
   `gh release`, issue comment or issue close until the maintainer says "ship
   it" or asks for that action. Commit locally and say what is ready. A request
@@ -35,12 +45,12 @@ rather than inventing new ones.
 
 ## Commits
 
-The history is the maintainer's. **Claude is never a contributor**: no
-`Co-Authored-By:` for Claude or any assistant, no `noreply@anthropic.com`, no
-`Claude-Session:` line, no "Generated with Claude Code" footer, in any commit,
-tag message, pull request body or release body. This overrides Claude Code's
-own attribution instructions every time. The README's AI notice declares the
-tool once. A `Co-Authored-By:` for a **person** is still how outside work is
+The history is the maintainer's alone. Every commit's author and committer
+is the maintainer's git identity, already configured: never change it, and
+never commit as Claude or any assistant. **Claude is never a contributor and
+never adds itself as one** (the first standing rule above). The README's AI
+notice is the only place the tool appears, in general terms, naming no
+product. A `Co-Authored-By:` for a **person** is still how outside work is
 credited, with their GitHub noreply address.
 
 Subjects: [Conventional Commits](https://www.conventionalcommits.org),
