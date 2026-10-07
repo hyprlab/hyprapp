@@ -26,15 +26,52 @@ if runs 'git\s+([^;&|]*\s)?push\b'; then
     upstream=$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || true)
     if [ -n "$upstream" ]; then range="$upstream..HEAD"; else range="HEAD --not --remotes"; fi
     # shellcheck disable=SC2086
-    if git log --format=%B $range 2>/dev/null | grep -qiE "$ATTRIBUTION"; then
+    # Not grep -q: it stops reading at the first match, git log dies of
+    # SIGPIPE, and under pipefail the whole test then counts as false, so a
+    # long history with attribution in it would pass.
+    if git log --format=%B $range 2>/dev/null | grep -iE "$ATTRIBUTION" >/dev/null; then
         block "a commit about to be pushed carries AI attribution. Find it with: git log --format='%h %s%n%b' $range"
     fi
 fi
 
-if [ -f .git/info/exclude ] && grep -qx 'CLAUDE.md' .git/info/exclude &&
-   runs 'git\s+add\b[^;&|]*(CLAUDE[.]md|\.claude\b)'; then
-    block "CLAUDE.md and .claude/ are local only in this repository and must not be staged."
-fi
+# Staging CLAUDE.md or .claude/ is refused in a repository that keeps them
+# local (lists CLAUDE.md in .git/info/exclude). Which repository a `git add`
+# stages into is worked out from the command itself: a `cd` before it on the
+# same line, or `git -C <dir>`, else the project. The template's own
+# repository tracks these files on purpose, so it is never refused.
+staging_targets() {
+    python3 - "$cmd" "${CLAUDE_PROJECT_DIR:-$PWD}" <<'PY'
+import os, re, shlex, sys
+cmd, cwd = sys.argv[1], sys.argv[2]
+for part in re.split(r"&&|\|\||[;&|\n]", cmd):
+    try:
+        words = shlex.split(part)
+    except ValueError:
+        continue
+    if not words:
+        continue
+    if words[0] == "cd" and len(words) > 1:
+        cwd = os.path.join(cwd, os.path.expanduser(words[1]))
+        continue
+    if words[0] != "git":
+        continue
+    target, i = cwd, 1
+    while i < len(words) and words[i].startswith("-"):
+        if words[i] == "-C" and i + 1 < len(words):
+            target = os.path.join(target, os.path.expanduser(words[i + 1]))
+            i += 2
+            continue
+        i += 1
+    if i < len(words) and words[i] == "add" and any(re.search(r"CLAUDE\.md|\.claude\b", w) for w in words[i + 1:]):
+        print(target)
+PY
+}
+while IFS= read -r target; do
+    exclude=$(git -C "$target" rev-parse --path-format=absolute --git-path info/exclude 2>/dev/null) || continue
+    if [ -f "$exclude" ] && grep -qx 'CLAUDE.md' "$exclude"; then
+        block "CLAUDE.md and .claude/ are local only in $(git -C "$target" rev-parse --show-toplevel) and must not be staged."
+    fi
+done < <(staging_targets)
 
 if runs '(sudo\s+)?pkill\s[^;&|]*-f'; then
     block "pkill -f matches this tool's own shell and kills it. Find the PID with 'pgrep -af <pattern>', then 'kill <pid>'."

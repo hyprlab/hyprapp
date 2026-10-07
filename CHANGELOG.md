@@ -27,6 +27,13 @@ All notable changes to Hyprapp are documented here. The format follows
   right. On a phone it opens as a list, and each section has a Back button
 
 ### Fixed
+- The Claude Code guard hook refuses a push whose commits carry AI
+  attribution however long the history is; before, `grep -q` ended the pipe
+  early and, under `pipefail`, the check passed
+- The guard hook judges staging CLAUDE.md or `.claude/` by the repository
+  the `git add` targets (after a `cd`, or with `git -C`), not by the project
+  the session was opened in, so working on the template from an app's session
+  is no longer refused, and an app's files are refused from anywhere
 - `db.session.begin_nested()` rolls back under SQLite; the sqlite3 driver
   committed a released savepoint
 - `tools/release-notes.sh` builds the compare link when the origin remote uses
