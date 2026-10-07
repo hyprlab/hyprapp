@@ -69,7 +69,7 @@ Long-form text uses `.prose` at 16.5px and 1.72.
 | `.settings`, `.settings-nav`, `.settings-navitem`, `.settings-head`, `.settings-pane` | The settings window: a rail of sections beside the chosen one; on phones a list that slides into each section |
 | `.sheet`, `.sheet-bar`, `.sheet-article`, `.prose` | The full-height detail view |
 | `.palette` and its parts | The Ctrl/Cmd+K search |
-| `.toast`, `.toast--error`, `.toast-action` | Confirmations under the topbar, with an optional action such as Undo |
+| `.toast`, `.toast--error`, `.toast-action` | Confirmations under the topbar, with an optional action such as Undo in the accent: a dark pill in the light theme, a raised charcoal one in the dark, and a red one for an error in each |
 | `.about-hero`, `.tech-stack`, `.release-list` | The About section |
 | `.auth-card`, `.auth-mark`, `.flash`, `.wizard`, `.wiz-*`, `.error-code` | Sign-in, setup and error pages |
 | `.ptr` | Pull to refresh on touch devices |
