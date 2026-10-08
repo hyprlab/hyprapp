@@ -19,6 +19,8 @@ All notable changes to Hyprapp are documented here. The format follows
   server. The TURNSTILE_* variables still work as a fresh-install default
 
 ### Changed
+- The chosen row in the sidebar and in Settings is a rounded grey pill with
+  a short yellow bar beside it, instead of a bar along its edge
 - Backgrounds, borders and text are neutral greys in both themes, without
   the yellow tint of the light theme or the blue of the dark
 - The dark theme is lighter: charcoal backgrounds instead of near-black, with

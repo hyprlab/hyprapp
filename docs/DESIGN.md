@@ -60,7 +60,7 @@ Long-form text uses `.prose` at 16.5px and 1.72.
 | `.theme-picker`, `.theme-chip` | Chip-style radio group |
 | `.chip`, `.chip--muted`, `.count`, `.count--accent`, `.title-chip` | Small labels and counters |
 | `.shell`, `.sidebar`, `.sidebar-head/-scroll/-foot` | The layout. The head and foot stay pinned; only the middle scrolls. |
-| `.navitem`, `.sidebar-label`, `.sidelist`, `.sideitem` | Sidebar rows. `.is-active` adds `--selected` and an inset accent bar. |
+| `.navitem`, `.sidebar-label`, `.sidelist`, `.sideitem` | Sidebar rows. `.is-active` adds the `--selected` pill and a short rounded accent bar just outside its left edge. |
 | `.topbar`, `.context-title`, `.topbar-actions` | The sticky, blurred bar over the content |
 | `.searchpill`, `.viewswitch`, `.menu`/`.menubtn`/`.menupop`/`.menuopt` | Topbar controls |
 | `.card`, `.row`, `.kicker`, `.new-dot`, `.pinbtn`, `.is-done` | Records as cards or list rows |
