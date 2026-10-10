@@ -42,6 +42,7 @@ Check that `git log origin/main..main --format=%B` carries no AI attribution
 ```sh
 git push origin main vX.Y.Z               # stable-X.Y instead of main for a patch
 tools/release-notes.sh X.Y.Z > /tmp/notes-X.Y.Z.md
+# shorten every line in the notes file now (docs/RELEASING.md, "Release notes")
 gh release create vX.Y.Z --title "vX.Y.Z" --notes-file /tmp/notes-X.Y.Z.md
 tools/publish-image.sh X.Y.Z
 docker compose pull && docker compose up -d      # the maintainer's own instance
@@ -49,8 +50,10 @@ curl -fsS http://localhost:<port>/healthz        # reports the new version
 ```
 
 The title is the version and nothing else: no name, no tagline. The body is
-that version's section plus the generated list; never hand CHANGELOG.md itself
-to `gh release create`. No mention of the AI tool, no "Generated with" footer.
+the generated draft with every line cut to a few words and its issue, under
+New features, Changes, Fixes and Translations, then only the Full changelog
+link: no commit list, no bold but that label, no intro. Never hand
+CHANGELOG.md itself to `gh release create`. No mention of the AI tool, no "Generated with" footer.
 
 For a patch: merge `stable-X.Y` back into `main` afterwards, and ship a beta
 from main alongside, so the beta is never missing a fix stable has. Never

@@ -18,7 +18,8 @@ docs/RELEASING.md; the `ship-beta` and `ship-stable` skills walk it.
 4. `tools/release-notes.sh X.Y.Z > notes.md`, then
    `gh release create vX.Y.Z --title "vX.Y.Z" --notes-file notes.md`
    (`--prerelease` for a beta). **The title is the version and nothing else;
-   no marketing name, no tagline.** Never hand CHANGELOG.md itself to
+   no marketing name, no tagline.** Shorten the notes file into
+   [[release-notes-style]] before creating the release. Never hand CHANGELOG.md itself to
    `gh release`: that ships the whole history onto every release page.
 5. `tools/publish-image.sh X.Y.Z`: builds from the tag via `git archive`,
    pushes `:X.Y.Z :X.Y :latest` (stable) or `:X.Y.Z-beta.K :beta` (beta).

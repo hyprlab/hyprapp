@@ -45,13 +45,17 @@ and that `git log origin/beta..beta --format=%B` carries no AI attribution.
 ```sh
 git push origin main beta vX.Y.0-beta.K
 tools/release-notes.sh X.Y.0-beta.K > /tmp/notes-X.Y.0-beta.K.md
+# shorten every line in the notes file now (docs/RELEASING.md, "Release notes")
 gh release create vX.Y.0-beta.K --prerelease --title "vX.Y.0-beta.K" --notes-file /tmp/notes-X.Y.0-beta.K.md
 tools/publish-image.sh X.Y.0-beta.K
 git checkout main
 ```
 
 Always `--prerelease`, so `releases/latest` keeps pointing at stable. The
-title is the version and nothing more. Nothing in the release body mentions
+title is the version and nothing more. The body is the generated draft with
+every line cut to a few words and its issue, under New features, Changes,
+Fixes and Translations, then only the Full changelog link: no commit list, no
+bold but that label, no intro. Nothing in the release body mentions
 the AI tool or carries a "Generated with" footer.
 
 ## 4. After

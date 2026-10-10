@@ -118,7 +118,7 @@ docker compose pull && docker compose up -d     # the maintainer's own instance
 ```
 
 The release title is the version and nothing else: no name, no tagline. The
-body is that version's changelog section plus the generated list of commits.
+body is short lists and a compare link, as in "Release notes" below.
 
 Then reply to and close every issue the release fixes, and delete the
 superseded releases (below).
@@ -138,6 +138,44 @@ or can't sign anyone in.
 6. Ship a beta from main alongside the patch, so the beta is never missing a
    fix that stable has.
 7. Never delete a `stable-X.Y` branch: patch commits may exist only there.
+
+## Release notes
+
+`tools/release-notes.sh` prints a draft: the version's changelog section under
+the release headings, and a compare link. Before `gh release create`, shorten
+every line in the file to a few words and its issue. The changelog keeps its
+full sentences; the release page does not repeat them.
+
+```
+### New features:
+
+- Recipients from LDAP directories - (#12)
+- Drag files onto the window - (#15)
+
+### Changes:
+
+- Settings pages laid out in sections across the full width
+
+### Fixes:
+
+- messages stuck on "Loading…" - (#18)
+
+### Translations:
+
+- Polish by [Name](https://github.com/login)
+
+---
+
+**Full changelog:** [v1.41.1...v1.42.0](https://github.com/OWNER/REPO/compare/v1.41.1...v1.42.0)
+```
+
+- Features start with a capital; fixes are lower case and name the bug that
+  is gone. The issue, if any, ends the line as ` - (#N)`.
+- Drop a heading with nothing under it. No introduction, no closing line, and
+  no bold except the `Full changelog:` label.
+- No list of commits: the compare link shows them.
+- An `@` only for people whose code, art or translation is in the release;
+  translators are credited by a link on their name.
 
 ## The Releases page
 

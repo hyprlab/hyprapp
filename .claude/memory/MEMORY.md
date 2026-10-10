@@ -6,6 +6,7 @@
 - [Strict SemVer](semver-strict.md) — warn Jason before tagging if the version doesn't fit the commits
 - [Release cadence](release-cadence.md) — main -> beta (nightly-style) -> stable (weekly, on request); bare "ship it" = ask which
 - [Ship flow](ship-flow.md) — prepare-release, push, release-notes, gh release, publish-image; CHANGELOG is the single record
+- [Release notes style](release-notes-style.md) — STANDING RULE: short headed lists, issue per line, no commit list, only a Full changelog link, no stray bold
 - [Release branching](release-branching.md) — lazy stable-X.Y from the last tag for urgent patches only
 - [Releases page trim](releases-page-trim.md) — newest per X.Y + current beta; confirm the first time per project
 - [Issue replies](issue-replies.md) — "*Agentic reply:*", 1-2 sentences, no thanks, numbered asks

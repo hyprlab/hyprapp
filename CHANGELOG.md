@@ -35,6 +35,9 @@ All notable changes to Hyprapp are documented here. The format follows
 - Secondary text and the red of errors have more contrast, meeting WCAG AA
   in both themes; the fields for adding a user and the search box have
   labels a screen reader can read
+- `tools/release-notes.sh` names the sections New features, Changes, Fixes
+  and Translations and ends with a Full changelog link, without the list of
+  commits; docs/RELEASING.md shows the short form the notes take
 - Changing a password signs the account out everywhere else, remember-me
   cookies included
 - Settings opens as a two-pane window: the sections are listed in a rail on
