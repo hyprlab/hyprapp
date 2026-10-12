@@ -1,0 +1,13 @@
+{# The icon buttons drawn in more than one place. #}
+{% macro theme_toggle() -%}
+<button class="iconbtn" data-theme-toggle aria-label="Toggle theme" title="Toggle theme">
+  {{ icon("sun", "icon-sun") }}
+  {{ icon("moon", "icon-moon") }}
+</button>
+{%- endmacro %}
+
+{% macro close_button(cls="iconbtn", title="") -%}
+<button class="{{ cls }}" data-close aria-label="Close"{% if title %} title="{{ title }}"{% endif %}>
+  {{ icon("close") }}
+</button>
+{%- endmacro %}

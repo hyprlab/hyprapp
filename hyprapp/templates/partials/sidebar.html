@@ -1,4 +1,4 @@
-{% from "partials/icons.html" import icon, theme_toggle %}
+{% from "partials/buttons.html" import theme_toggle %}
 {% macro navitem(name, label, icon_name, active, count=None) %}
         <a class="navitem {{ 'is-active' if active }}" href="{{ url_for('main.index', filter=name) }}">
           {{ icon(icon_name) }}

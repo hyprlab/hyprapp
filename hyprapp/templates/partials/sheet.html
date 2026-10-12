@@ -1,4 +1,4 @@
-{% from "partials/icons.html" import icon, close_button %}
+{% from "partials/buttons.html" import close_button %}
 <!-- ————— Detail sheet ————— -->
 {% macro action(id, label, title, icon_name, danger=False) %}
       <button class="iconbtn{{ ' iconbtn--danger' if danger }}" id="{{ id }}" aria-label="{{ label }}" title="{{ title }}">

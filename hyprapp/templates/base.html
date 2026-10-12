@@ -20,9 +20,13 @@
       document.documentElement.setAttribute('data-theme', theme);
     })();
   </script>
+  <script type="importmap">{{ js_import_map()|tojson }}</script>
+  {% for url in js_preloads() %}
+  <link rel="modulepreload" href="{{ url }}">
+  {% endfor %}
 </head>
 <body class="{% block bodyclass %}{% endblock %}">
   {% block body %}{% endblock %}
-  <script src="{{ static_url('js/app.js') }}" defer></script>
+  <script type="module" src="{{ static_url('js/app.js') }}"></script>
 </body>
 </html>

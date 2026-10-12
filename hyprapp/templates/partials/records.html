@@ -1,6 +1,5 @@
 {# The record list. Included by app.html on a page load, and returned on its
    own (?partial=1) when the client asks for the next page. #}
-{% from "partials/icons.html" import icon %}
 {% macro pin(item) %}
   <button class="pinbtn {{ 'is-pinned' if item.pinned }}" data-pin="{{ item.id }}"
           aria-label="{{ 'Unpin' if item.pinned else 'Pin' }}" title="{{ 'Unpin' if item.pinned else 'Pin' }}">

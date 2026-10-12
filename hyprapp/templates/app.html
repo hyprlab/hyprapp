@@ -2,7 +2,6 @@
 {% set titles = {'open': 'Open', 'all': 'All records', 'pinned': 'Pinned', 'done': 'Done'} %}
 {% block title %}{% if filter == 'open' %}{{ app_name }}{% else %}{{ titles[filter] }} — {{ app_name }}{% endif %}{% endblock %}
 {% block body %}
-{% from "partials/icons.html" import icon %}
 <div class="shell">
 
 {% include "partials/sidebar.html" %}
