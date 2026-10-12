@@ -3,7 +3,6 @@
 Every test gets its own temporary data directory and database, so nothing
 touches the developer's var/ and the tests run in any order.
 """
-import importlib
 import re
 
 import pytest
@@ -17,16 +16,11 @@ def app(tmp_path, monkeypatch):
     monkeypatch.setenv("WORKER_MINUTES", "0")
     monkeypatch.setenv("SECRET_KEY", "test-key")
 
-    # config reads the environment at import time, so reload it after the
-    # variables above are set.
+    # Config is read from the environment at import; rebuild it from the
+    # variables above, for this test only.
     import hyprapp
-    import hyprapp.auth
     import hyprapp.config
-    import hyprapp.setup
-    importlib.reload(hyprapp.config)
-    # Process-wide caches that assume one database for the life of the process.
-    hyprapp.setup._completed["done"] = False
-    hyprapp.auth._failures.clear()
+    monkeypatch.setattr(hyprapp.config, "Config", hyprapp.config.from_environment())
 
     class TestConfig(hyprapp.config.Config):
         TESTING = True

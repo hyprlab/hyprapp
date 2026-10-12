@@ -9,9 +9,14 @@ from datetime import datetime, timezone
 
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
 from werkzeug.security import check_password_hash, generate_password_hash
 
 db = SQLAlchemy()
+
+
+# The views of the record list a person can choose as their default.
+VIEWS = ("cards", "list")
 
 
 def utcnow() -> datetime:
@@ -38,6 +43,20 @@ class User(UserMixin, db.Model):
     items = db.relationship(
         "Item", backref="owner", cascade="all, delete-orphan", lazy="dynamic"
     )
+
+    @classmethod
+    def find(cls, username: str) -> "User | None":
+        """The account with this email, whatever its case."""
+        return cls.query.filter(func.lower(cls.username) == username.strip().lower()).first()
+
+    @classmethod
+    def create(cls, username: str, password: str, name: str | None = None,
+               is_admin: bool = False) -> "User":
+        user = cls(username=username, name=name, is_admin=is_admin)
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+        return user
 
     @property
     def display_name(self) -> str:

@@ -5,7 +5,7 @@ one known token, so the tests cover the app's decisions, not the network.
 """
 import pytest
 
-from hyprapp import auth
+from hyprapp import turnstile
 
 GOOD_TOKEN = "passes"
 
@@ -27,7 +27,7 @@ def fake_cloudflare(monkeypatch):
             return Response({"success": False, "error-codes": ["invalid-input-response"]})
         return Response({"success": True})
 
-    monkeypatch.setattr(auth.requests, "post", post)
+    monkeypatch.setattr(turnstile.requests, "post", post)
 
 
 def turn_on(client, csrf, **overrides):
@@ -185,15 +185,15 @@ class Answer:
     (Answer(error=ValueError("not json")), "Couldn't reach Cloudflare to check the challenge."),
 ])
 def test_what_cloudflare_says(client, csrf, admin, monkeypatch, answer, error):
-    monkeypatch.setattr(auth.requests, "post", lambda url, data, timeout: answer)
+    monkeypatch.setattr(turnstile.requests, "post", lambda url, data, timeout: answer)
     resp = turn_on(client, csrf)
     assert resp.status_code == 400 and resp.get_json() == {"error": error}
 
 
 def test_cloudflare_out_of_reach(client, csrf, admin, monkeypatch):
     def unreachable(url, data, timeout):
-        raise auth.requests.ConnectionError("down")
-    monkeypatch.setattr(auth.requests, "post", unreachable)
+        raise turnstile.requests.ConnectionError("down")
+    monkeypatch.setattr(turnstile.requests, "post", unreachable)
     resp = turn_on(client, csrf)
     assert resp.get_json() == {"error": "Couldn't reach Cloudflare to check the challenge."}
 
@@ -203,7 +203,7 @@ def test_what_is_sent_to_cloudflare(client, csrf, admin, monkeypatch):
     def capture(url, data, timeout):
         sent.update(url=url, data=data, timeout=timeout)
         return Answer({"success": True})
-    monkeypatch.setattr(auth.requests, "post", capture)
+    monkeypatch.setattr(turnstile.requests, "post", capture)
     turn_on(client, csrf)
     assert sent == {"url": "https://challenges.cloudflare.com/turnstile/v0/siteverify",
                     "data": {"secret": "secret-abcd", "response": GOOD_TOKEN, "remoteip": "127.0.0.1"},

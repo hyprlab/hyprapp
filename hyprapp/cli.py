@@ -20,10 +20,10 @@ from pathlib import Path
 import click
 from flask import Flask, current_app
 from flask.cli import with_appcontext
-from sqlalchemy import func
 
-from .auth import EMAIL_RE, MIN_PASSWORD
+from . import turnstile as turnstile_feature
 from .models import User, db, set_setting
+from .validation import EMAIL_RE, password_problem
 
 
 def register(app: Flask) -> None:
@@ -33,14 +33,11 @@ def register(app: Flask) -> None:
     app.cli.add_command(turnstile)
 
 
-def _find(username: str) -> User | None:
-    return User.query.filter(func.lower(User.username) == username.strip().lower()).first()
-
-
 def _ask_password() -> str:
     password = click.prompt("Password", hide_input=True, confirmation_prompt=True)
-    if len(password) < MIN_PASSWORD:
-        raise click.ClickException(f"Passwords need at least {MIN_PASSWORD} characters.")
+    problem = password_problem(password)
+    if problem:
+        raise click.ClickException(problem)
     return password
 
 
@@ -52,14 +49,12 @@ def _ask_password() -> str:
 def create_user(username, name, admin):
     """Create an account."""
     username = username.strip().lower()
+    # Unlike sign-up, no length limit, and the name is kept as given.
     if not EMAIL_RE.match(username):
         raise click.ClickException("The username must be an email address.")
-    if _find(username):
+    if User.find(username):
         raise click.ClickException(f"{username} already exists.")
-    user = User(username=username, name=name, is_admin=admin)
-    user.set_password(_ask_password())
-    db.session.add(user)
-    db.session.commit()
+    User.create(username, _ask_password(), name=name, is_admin=admin)
     click.echo(f"Created {username}{' (admin)' if admin else ''}.")
 
 
@@ -68,7 +63,7 @@ def create_user(username, name, admin):
 @click.argument("username")
 def reset_password(username):
     """Set a new password for an account."""
-    user = _find(username)
+    user = User.find(username)
     if not user:
         raise click.ClickException(f"No account called {username}.")
     user.set_password(_ask_password())
@@ -110,12 +105,11 @@ def turnstile():
 @with_appcontext
 def turnstile_status():
     """Say whether Turnstile is on, and where its keys come from."""
-    from .auth import turnstile_config
-    config = turnstile_config()
-    if config is None:
+    keys = turnstile_feature.config()
+    if keys is None:
         click.echo("Turnstile is off.")
     else:
-        click.echo(f"Turnstile is on, site key {config['site_key']}, from the {config['source']}.")
+        click.echo(f"Turnstile is on, site key {keys['site_key']}, from the {keys['source']}.")
 
 
 @turnstile.command("off")
