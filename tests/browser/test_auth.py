@@ -4,13 +4,7 @@ from playwright.sync_api import expect
 from .conftest import ADMIN, Api
 
 
-def test_the_setup_wizard(new_page, server):
-    page = new_page()
-    page.goto("/")
-    expect(page).to_have_url(server.url + "/setup")
-    expect(page.locator(".wiz-step.is-active .wiz-title")).to_have_text("Welcome")
-    page.get_by_role("button", name="Get started").click()
-
+def wizard_account(page):
     step = page.locator('.wiz-step[data-step="1"]')
     expect(step).to_have_class("wiz-step is-active")
     expect(page.locator("#wiz-name")).to_be_focused()
@@ -31,6 +25,8 @@ def test_the_setup_wizard(new_page, server):
     expect(page.locator("#wiz-error-1")).to_be_hidden()
     expect(page.locator(".wiz-dot.is-active")).to_have_count(3)
 
+
+def wizard_instance(page):
     step = page.locator('.wiz-step[data-step="2"]')
     step.get_by_role("button", name="Back").click()
     expect(page.locator('.wiz-step[data-step="1"]')).to_have_class("wiz-step is-active")
@@ -43,6 +39,8 @@ def test_the_setup_wizard(new_page, server):
     page.fill("#wiz-worker", "0")
     step.get_by_role("button", name="Create the instance").click()
 
+
+def wizard_first_record(page):
     step = page.locator('.wiz-step[data-step="3"]')
     expect(step).to_have_class("wiz-step is-active")
     page.fill("#wiz-title", "My first record")
@@ -50,6 +48,17 @@ def test_the_setup_wizard(new_page, server):
     expect(page.locator("#wiz-added li")).to_have_text(["My first record"])
     expect(page.locator("#wiz-title")).to_have_value("")
     page.get_by_role("button", name="Open Hyprapp").click()
+
+
+def test_the_setup_wizard(new_page, server):
+    page = new_page()
+    page.goto("/")
+    expect(page).to_have_url(server.url + "/setup")
+    expect(page.locator(".wiz-step.is-active .wiz-title")).to_have_text("Welcome")
+    page.get_by_role("button", name="Get started").click()
+    wizard_account(page)
+    wizard_instance(page)
+    wizard_first_record(page)
 
     expect(page).to_have_url(server.url + "/")
     expect(page.locator(".card-title")).to_have_text(["My first record"])

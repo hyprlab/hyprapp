@@ -283,6 +283,17 @@ def page(new_page, api):
     return page
 
 
+def card(page, title):
+    """A record's card or row."""
+    return page.locator("[data-item]", has_text=title)
+
+
+def open_record(page, title):
+    """Open a record's sheet by clicking it, and wait until it shows."""
+    card(page, title).click()
+    playwright_api.expect(page.locator("#sheet-title")).to_have_text(title)
+
+
 def wait_for_reload(page, action):
     """Run an action that reloads the page, and wait until the new one has run its scripts."""
     with page.expect_navigation(wait_until="load"):

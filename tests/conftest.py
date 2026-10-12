@@ -28,6 +28,13 @@ def app(tmp_path, monkeypatch):
     yield hyprapp.create_app(TestConfig)
 
 
+def make(post, title="Record", **extra) -> dict:
+    """A record, created through the API as the client creates one."""
+    resp = post("/items", {"title": title, **extra})
+    assert resp.status_code == 200, resp.get_json()
+    return resp.get_json()["item"]
+
+
 def token_for(client) -> str:
     """The session's CSRF token, read out of a page the way a browser would."""
     page = client.get("/login", follow_redirects=True)
