@@ -30,7 +30,7 @@ from shape import TYPES, duplicates, functions_in, js_import_problems
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULTS = {
     "paths": ["."],
-    "max_lines": {"py": 300, "js": 300, "css": 300, "html": 200},
+    "max_lines": {"py": 300, "js": 300, "css": 300, "html": 200, "sh": 300},
     "max_function_lines": 50,
     "max_complexity": 10,
     "duplicate_lines": 6,
@@ -43,7 +43,10 @@ def settings() -> dict:
         found = tomllib.loads((ROOT / "pyproject.toml").read_text())
     except OSError:
         found = {}
-    return {**DEFAULTS, **found.get("tool", {}).get("hyprapp", {}).get("checks", {})}
+    cfg = {**DEFAULTS, **found.get("tool", {}).get("hyprapp", {}).get("checks", {})}
+    # A type the table leaves out keeps its default budget.
+    cfg["max_lines"] = {**DEFAULTS["max_lines"], **cfg["max_lines"]}
+    return cfg
 
 
 def source_files(paths: list[str]) -> list[Path]:
@@ -76,7 +79,7 @@ def file_problems(path: Path, cfg: dict) -> list[str]:
             f"{name}: {lines} lines; the budget for .{kind} is {cfg['max_lines'][kind]}. "
             "Split it by concern, not by line number"
         )
-    if kind not in ("py", "js"):
+    if kind not in ("py", "js", "html"):
         return found
     try:
         functions = functions_in(path)
@@ -135,7 +138,12 @@ def main(argv: list[str]) -> int:
     pool = [
         p for p in sorted(set(everything) | set(targets)) if f"{rel(p)}:duplicates" not in cfg["exceptions"]
     ]
-    problems = [problem for path in files for problem in file_problems(path, cfg)]
+    problems = [
+        f"exception {name!r} has no reason"
+        for name, why in cfg["exceptions"].items()
+        if not isinstance(why, str) or not why.strip()
+    ]
+    problems += [problem for path in files for problem in file_problems(path, cfg)]
     window = cfg["duplicate_lines"]
     problems += [
         f"{rel(a)}:{line} and {rel(b)}:{other}: {window} or more lines repeated"

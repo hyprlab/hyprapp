@@ -79,14 +79,23 @@ def test_stylesheets_and_images_are_versioned(client, csrf, admin):
         assert re.search(r"\?v=\d+$", url), url
 
 
-def test_a_file_at_its_current_version_is_cached_for_a_year(client):
-    url = versioned("api.js")
+@pytest.mark.parametrize("query", ["", "?v=1", "?v=nope", "CURRENT"])
+def test_static_files_are_revalidated_on_every_use(client, query):
+    url = versioned("api.js") if query == "CURRENT" else "/static/js/api.js" + query
     resp = client.get(url)
-    assert resp.status_code == 200
-    assert resp.headers["Cache-Control"] == "public, max-age=31536000"
-
-
-@pytest.mark.parametrize("query", ["", "?v=1", "?v=nope"])
-def test_any_other_static_request_is_revalidated(client, query):
-    resp = client.get("/static/js/api.js" + query)
     assert resp.status_code == 200 and resp.headers["Cache-Control"] == "no-cache"
+
+
+def test_a_missing_module_does_not_break_the_page(app, client, csrf, admin, monkeypatch):
+    from hyprapp import templating
+
+    real = templating.IMPORT_RE
+
+    class WithAGhost:
+        def findall(self, text):
+            return real.findall(text) + ["ghost.js"]
+
+    monkeypatch.setattr(templating, "IMPORT_RE", WithAGhost())
+    templating._js_assets.cache_clear()
+    assert client.get("/").status_code == 200
+    templating._js_assets.cache_clear()

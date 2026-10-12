@@ -1,7 +1,6 @@
-"""What every template can use (globals, the context processor, filters),
-and the versioning of the static files they link: static_url() for any file,
-an import map for the JavaScript modules, and the cache lifetime that goes
-with a versioned URL."""
+"""What every template can use: globals, the context processor, filters,
+and the versioned URLs of the static files they link (static_url() for any
+file, an import map for the JavaScript modules)."""
 
 import os
 import re
@@ -9,13 +8,11 @@ from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
 
-from flask import Flask, current_app, request, url_for
+from flask import Flask, current_app, url_for
 
 from . import about_docs, auth, icons, turnstile
 from .models import utcnow
 from .security import csrf_token
-
-YEAR = 365 * 24 * 3600
 
 
 def _version(filename: str) -> int:
@@ -31,12 +28,6 @@ def static_url(filename: str) -> str:
     return url_for("static", filename=filename, v=_version(filename))
 
 
-def static_max_age(filename: str) -> int | None:
-    """A file asked for at its current version is cached for a year: a new
-    version is a new URL. Anything else is revalidated on every use."""
-    return YEAR if request.args.get("v") == str(_version(filename)) else None
-
-
 # import ... from "./name.js" and import "./name.js", the only forms the modules use.
 IMPORT_RE = re.compile(r"""^\s*import\s+(?:[^"';]+?\s+from\s+)?["']\./([\w-]+\.js)["']""", re.M)
 ENTRY = "app.js"
@@ -50,9 +41,12 @@ def _js_assets(folder: str, base: str, stamp: tuple) -> tuple[dict, tuple[str, .
     graph, queue = [], [ENTRY]
     while queue:
         name = queue.pop(0)
-        if name not in graph:
+        path = Path(folder) / name
+        # A missing module breaks the page's scripts, which check-code.py
+        # reports; it must not break the page itself.
+        if name not in graph and path.is_file():
             graph.append(name)
-            queue += IMPORT_RE.findall((Path(folder) / name).read_text(encoding="utf-8"))
+            queue += IMPORT_RE.findall(path.read_text(encoding="utf-8"))
     import_map = {"imports": {f"{base}{name}": url for name, url in versioned.items()}}
     return import_map, tuple(versioned[name] for name in graph)
 
@@ -96,8 +90,6 @@ def ago(dt: datetime) -> str:
 
 
 def init_app(app: Flask, version: str) -> None:
-    app.get_send_file_max_age = static_max_age
-
     @app.context_processor
     def inject_globals():
         return {
