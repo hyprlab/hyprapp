@@ -10,3 +10,8 @@ var/
 
 # Source material the template was built from, not part of it.
 claude-memory-hylki/
+
+# Test output: coverage data, and screenshots from a failed visual comparison.
+.coverage
+htmlcov/
+tests/browser/visual-diffs/

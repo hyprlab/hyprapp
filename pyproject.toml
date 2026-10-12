@@ -1,0 +1,4 @@
+[tool.pytest.ini_options]
+markers = [
+    "browser: drives the app in Chromium with Playwright (tests/browser)",
+]

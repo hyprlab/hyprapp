@@ -1,2 +1,6 @@
 -r requirements.txt
 pytest==8.3.3
+# The browser tests (tests/browser). After installing, fetch the browser once:
+#   .venv/bin/python -m playwright install chromium
+playwright==1.61.0
+pillow==12.3.0
