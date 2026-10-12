@@ -1,5 +1,7 @@
 -r requirements.txt
 pytest==8.3.3
+# Lint and format (pyproject.toml, [tool.ruff]).
+ruff==0.17.0
 # The browser tests (tests/browser). After installing, fetch the browser once:
 #   .venv/bin/python -m playwright install chromium
 playwright==1.61.0
