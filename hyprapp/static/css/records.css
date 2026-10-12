@@ -1,0 +1,103 @@
+/* The worked example's records: cards, list rows, empty states and the pager. */
+
+/* ————— Records: the list and grid the app starts from ————— */
+.records { padding: clamp(18px, 3vw, 34px) clamp(16px, 3.5vw, 36px) 60px; }
+.grid--cards { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.grid--list { border-top: 1px solid var(--line); }
+
+.kicker {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+}
+.kicker time { color: var(--faint); font-weight: 600; letter-spacing: .05em; flex: none; }
+.kicker-sep { color: var(--faint); }
+
+.new-dot {
+  width: 7px; height: 7px; border-radius: 2px; background: var(--accent);
+  flex: none; box-shadow: 0 0 6px var(--accent-glow);
+}
+.is-done .new-dot { display: none; }
+/* List rows are a grid: keep the dot's cell when it goes away, or the columns
+   shift sideways as rows change state. */
+.row.is-done .new-dot { display: block; visibility: hidden; }
+.is-done .card-title, .is-done .row-title { color: color-mix(in srgb, var(--ink) 55%, var(--bg)); }
+
+.card {
+  position: relative; overflow: hidden; cursor: pointer;
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 14px 16px 16px; border-radius: var(--radius);
+  background: var(--surface); border: 1px solid var(--line);
+  transition: transform .18s ease, border-color .18s, box-shadow .18s;
+}
+.card:hover { transform: translateY(-2px); border-color: var(--line-strong); box-shadow: var(--shadow-2); }
+.card .kicker { padding-right: 40px; }
+.card-title { font-size: 16.5px; font-weight: 680; letter-spacing: -0.016em; line-height: 1.3; }
+.card-dek {
+  font-size: 13.5px; line-height: 1.55; color: var(--muted);
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.card-meta { font-size: 12.5px; color: var(--faint); font-weight: 550; display: flex; gap: 7px; margin-top: auto; padding-top: 8px; }
+
+.pinbtn {
+  position: absolute; top: 8px; right: 10px; z-index: 2;
+  display: grid; place-items: center; width: 30px; height: 30px;
+  border-radius: 8px; color: var(--muted);
+  opacity: 0; transition: opacity .15s, color .15s, background .15s;
+}
+.pinbtn svg { width: 16px; height: 16px; }
+.card:hover .pinbtn, .card:focus-within .pinbtn, .pinbtn.is-pinned { opacity: 1; }
+.pinbtn:hover { color: var(--ink); background: var(--wash); }
+.pinbtn.is-pinned { color: var(--accent-ink); background: var(--accent); }
+.pinbtn.is-pinned svg { fill: currentColor; }
+@media (hover: none) { .pinbtn { opacity: 1; } }
+
+.row {
+  display: grid; align-items: center; gap: 12px;
+  grid-template-columns: 10px minmax(0, 1fr) minmax(0, 1.4fr) max-content 30px;
+  padding: 11px 6px; border-bottom: 1px solid var(--line);
+  cursor: pointer; transition: background .12s;
+}
+.row:hover { background: var(--surface); }
+.row .new-dot { justify-self: center; }
+.row-title { font-size: 14.5px; font-weight: 620; letter-spacing: -0.011em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row-dek { font-size: 13px; color: var(--faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row-time { font-size: 12px; color: var(--faint); font-weight: 550; white-space: nowrap; }
+.row .pinbtn { position: static; opacity: 0; }
+.row:hover .pinbtn, .row .pinbtn.is-pinned { opacity: 1; }
+
+/* ————— Empty states & pager ————— */
+.empty {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  text-align: center; padding: 12vh 20px;
+}
+.empty-title { font-size: 26px; font-weight: 800; letter-spacing: -0.03em; }
+.empty-text { color: var(--muted); max-width: 42ch; }
+.empty--onboard .mark--xl { margin-bottom: 6px; animation: mark-in .5s ease both; }
+.empty .btn { margin-top: 10px; }
+@keyframes mark-in { from { transform: translateY(8px) scale(.85); opacity: 0; } }
+
+.pager { display: flex; justify-content: center; padding: 30px 0 10px; }
+/* Infinite scroll on: the row keeps its place in the flow (the observer needs
+   something to watch) but reads as a loading state, not a button. */
+.pager-auto { display: none; align-items: center; gap: 8px; color: var(--faint); font-size: 13px; font-weight: 600; }
+.pager-spin { width: 15px; height: 15px; animation: spin 1s linear infinite; }
+#records-root[data-infinite="1"] .pager .btn { display: none; }
+#records-root[data-infinite="1"] .pager-auto { display: inline-flex; }
+.pager-end {
+  text-align: center; padding: 34px 0 12px;
+  color: var(--faint); font-size: 13px; font-weight: 600;
+}
+.pager-end::before {
+  content: ""; display: block; width: 26px; height: 2px; border-radius: 2px;
+  background: var(--accent); margin: 0 auto 14px;
+}
+
+/* ————— Records on smaller screens ————— */
+@media (max-width: 1060px) {
+  .row { grid-template-columns: 10px minmax(0, 1fr) max-content 30px; }
+  .row-dek { display: none; }
+}
+@media (max-width: 560px) {
+  .records { padding-inline: 14px; }
+  .grid--cards { grid-template-columns: 1fr; }
+}

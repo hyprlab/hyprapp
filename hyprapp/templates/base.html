@@ -9,7 +9,10 @@
   <title>{% block title %}{{ app_name }}{% endblock %}</title>
   <link rel="icon" href="{{ static_url('img/logo.svg') }}" type="image/svg+xml">
   <link rel="apple-touch-icon" sizes="180x180" href="{{ static_url('img/apple-touch-icon.png') }}">
-  <link rel="stylesheet" href="{{ static_url('css/app.css') }}">
+  {# In this order: each file's rules may override the ones before it. #}
+  {% for sheet in ("tokens", "base", "layout", "records", "overlays", "settings", "pages") %}
+  <link rel="stylesheet" href="{{ static_url('css/' ~ sheet ~ '.css') }}">
+  {% endfor %}
   <script>
     // Resolve the theme before first paint, or the page flashes the wrong one.
     (function () {

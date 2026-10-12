@@ -1,0 +1,204 @@
+/* What opens over the page: dialogs, the search palette, the detail sheet and
+   its prose, pull to refresh, and toasts. */
+
+/* ————— Modals ————— */
+.modal, .sheet { border: 0; padding: 0; background: var(--surface); color: var(--ink); }
+.modal {
+  width: min(430px, calc(100vw - 32px));
+  border-radius: 18px; box-shadow: var(--shadow-2);
+  border: 1px solid var(--line);
+}
+.modal--wide { width: min(620px, calc(100vw - 32px)); }
+.modal::backdrop, .sheet::backdrop, .palette::backdrop { background: var(--scrim); backdrop-filter: blur(3px); }
+/* Every dialog is modal, and each leaves viewport around it: the sheet's
+   gutters, the backdrop around a modal or the palette. A wheel over that space
+   would scroll the page behind, so freeze the page while any dialog is up.
+   overflow: hidden keeps the root's scroll offset, so the list is right where
+   it was when the dialog closes. */
+html:has(dialog[open]) { overflow: hidden; }
+.modal[open] { animation: modal-in .22s cubic-bezier(.2, .9, .3, 1.2) both; }
+@keyframes modal-in { from { transform: translateY(14px) scale(.97); opacity: 0; } }
+/* One continuous upward pass: the sheet rises in from below the fold and keeps
+   going out through the top, handing the eye off to the toast that lands under
+   the topbar. .is-closing is set in JS, which delays dialog.close() by the same
+   300ms. */
+.sheet[open] { animation: sheet-in .3s cubic-bezier(.16, .8, .3, 1) both; }
+.sheet.is-closing { animation: sheet-out .3s cubic-bezier(.5, 0, .75, .2) both; }
+.sheet[open]::backdrop { animation: scrim-in .3s ease both; }
+.sheet.is-closing::backdrop { animation: scrim-out .3s ease both; }
+@keyframes sheet-in { from { transform: translateY(100%); } }
+@keyframes sheet-out { to { transform: translateY(-100%); } }
+@keyframes scrim-in { from { opacity: 0; } }
+@keyframes scrim-out { to { opacity: 0; } }
+
+/* A dialog reopened after a reload reappears in place: no entrance. */
+dialog.is-restoring, dialog.is-restoring::backdrop { animation: none !important; }
+
+.modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 20px 0;
+}
+.modal-head h3 { font-size: 17px; font-weight: 750; letter-spacing: -0.02em; }
+.modal-body { display: flex; flex-direction: column; gap: 12px; padding: 16px 20px 20px; }
+
+/* ————— Search palette ————— */
+.palette {
+  border: 1px solid var(--line); border-radius: 16px; padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(560px, calc(100vw - 32px));
+  margin: 10vh auto auto; box-shadow: var(--shadow-2);
+}
+.palette[open] { animation: modal-in .18s cubic-bezier(.2, .9, .3, 1.1) both; }
+.palette-inputrow { display: flex; align-items: center; gap: 11px; padding: 14px 16px; }
+.palette-inputrow svg { color: var(--faint); width: 19px; height: 19px; }
+.palette-inputrow input {
+  flex: 1; border: 0; outline: none; background: none;
+  font: inherit; font-size: 16px; color: var(--ink);
+}
+.palette-inputrow input::placeholder { color: var(--faint); }
+.palette-inputrow kbd { padding: 2px 6px; text-transform: uppercase; }
+.palette-results {
+  border-top: 1px solid var(--line);
+  max-height: min(420px, 55vh); overflow-y: auto; overscroll-behavior: contain; padding: 8px;
+}
+.palette-label {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--faint); padding: 8px 10px 4px;
+}
+.palette-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 10px; border-radius: var(--radius-sm); cursor: pointer;
+}
+.palette-item-title {
+  flex: 1; min-width: 0; font-size: 14px; font-weight: 550;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.palette-item.is-done .palette-item-title { color: var(--muted); font-weight: 450; }
+.palette-item-title mark {
+  background: var(--wash); color: inherit; font-weight: 700;
+  border-radius: 3px; padding: 0 1px;
+}
+.palette-item-meta { font-size: 11.5px; color: var(--faint); font-weight: 550; flex: none; }
+.palette-item.is-active { background: var(--selected); box-shadow: inset 3px 0 0 var(--accent); }
+.palette-empty { padding: 18px 12px 14px; text-align: center; font-size: 13.5px; color: var(--muted); }
+
+/* ————— Detail sheet ————— */
+.sheet {
+  width: min(840px, 100vw); height: 100dvh; max-height: 100dvh;
+  margin: 0 auto; overflow-y: auto; overscroll-behavior: contain;
+  border-left: 1px solid var(--line); border-right: 1px solid var(--line);
+}
+.sheet-bar {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px;
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+.sheet-bar-actions { display: flex; gap: 4px; }
+.sheet-article { max-width: 660px; margin: 0 auto; padding: clamp(22px, 4vw, 44px) 20px 70px; }
+.sheet-article .kicker { margin-bottom: 14px; }
+.sheet-article .kicker::before {
+  content: ""; width: 14px; height: 4px; border-radius: 2px; background: var(--accent); display: inline-block;
+}
+.sheet-title {
+  font-size: clamp(26px, 4.5vw, 38px);
+  font-weight: 800; letter-spacing: -0.035em; line-height: 1.1;
+  text-wrap: balance; margin-bottom: 12px;
+}
+.sheet-meta { font-size: 13px; color: var(--faint); font-weight: 550; margin-bottom: 22px; }
+#sheet-pin.is-pinned, #sheet-done.is-done { color: var(--accent-ink); background: var(--accent); }
+#sheet-pin.is-pinned svg { fill: currentColor; }
+#sheet-copy { position: relative; }
+#sheet-copy.show-tip::after {
+  content: "Copied";
+  position: absolute; top: calc(100% + 8px); left: 50%;
+  background: var(--ink); color: var(--bg);
+  font-size: 11.5px; font-weight: 650; letter-spacing: .01em;
+  padding: 4px 9px; border-radius: 6px; white-space: nowrap;
+  pointer-events: none; z-index: 10;
+  animation: tip-in .15s ease both;
+}
+@keyframes tip-in {
+  from { opacity: 0; transform: translate(-50%, -4px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+@media (max-width: 900px) {
+  .sheet {
+    /* Full-bleed on phones: the dialog's UA max-width would otherwise inset it
+       about 2em from the viewport edges. */
+    width: 100vw; max-width: 100vw;
+    margin: 0; border: 0;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* ————— Long-form body copy ————— */
+.prose { font-size: 16.5px; line-height: 1.72; }
+.prose p { margin: 0 0 1.15em; }
+.prose a { text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.prose a:hover { background: var(--wash); }
+.prose img { border-radius: var(--radius-sm); margin: 8px 0; height: auto; }
+.prose h3, .prose h4 { font-weight: 750; letter-spacing: -0.02em; margin: 1.6em 0 .5em; line-height: 1.25; }
+.prose h3 { font-size: 21px; }
+.prose h4 { font-size: 17.5px; }
+.prose blockquote {
+  margin: 1.2em 0; padding: 2px 0 2px 18px;
+  border-left: 3px solid var(--accent);
+  color: var(--muted); font-style: italic;
+}
+.prose ul, .prose ol { padding-left: 1.4em; margin: 0 0 1.15em; }
+.prose li { margin-bottom: .35em; }
+.prose pre {
+  background: var(--field); border: 1px solid var(--line); border-radius: var(--radius-sm);
+  padding: 14px 16px; overflow-x: auto; font-size: 13.5px; line-height: 1.55;
+}
+.prose code { font-family: var(--mono); font-size: .92em; background: var(--field); padding: 1px 5px; border-radius: 5px; }
+.prose pre code { background: none; padding: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 2em 0; }
+.prose table { border-collapse: collapse; width: 100%; margin: 0 0 1.2em; font-size: 14px; display: block; overflow-x: auto; }
+.prose th, .prose td { border: 1px solid var(--line); padding: 7px 10px; text-align: left; }
+.prose figure { margin: 1.2em 0; }
+.prose figcaption { font-size: 13px; color: var(--faint); margin-top: 6px; }
+
+/* ————— Pull to refresh (touch) ————— */
+html { overscroll-behavior-y: contain; }  /* keep the browser's own pull-to-refresh out of the way */
+.ptr {
+  position: fixed; top: -56px; left: 50%; margin-left: -22px; z-index: 90;
+  width: 44px; height: 44px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--surface); border: 1px solid var(--line);
+  color: var(--muted); box-shadow: var(--shadow-2);
+  transition: transform .25s ease; will-change: transform;
+}
+/* Hidden at rest: parked above the viewport, its shadow would still show. */
+.ptr:not(.is-dragging):not(.is-refreshing) { visibility: hidden; }
+.ptr.is-dragging { transition: none; }
+.ptr.is-armed { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.ptr.is-refreshing svg { animation: spin .8s linear infinite; }
+
+/* ————— Toast ————— */
+/* Toasts sit just under the topbar: the sheet leaves through the top, so that
+   is where the eye already is when the message lands. */
+.toast {
+  position: fixed; left: 50%; top: calc(var(--topbar-h) + 12px); transform: translateX(-50%);
+  z-index: 100;
+  background: var(--ink); color: var(--bg);
+  font-size: 13.5px; font-weight: 600;
+  padding: 10px 18px; border-radius: 99px; box-shadow: var(--shadow-2);
+  animation: toast-in .25s ease both;
+}
+@keyframes toast-in { from { transform: translate(-50%, -10px); opacity: 0; } }
+.toast.is-leaving { animation: toast-out .25s ease forwards; }
+@keyframes toast-out { to { transform: translate(-50%, -16px); opacity: 0; } }
+.toast--error { background: var(--danger); color: #fff; }
+/* Dark: a raised charcoal pill with light text, where the light theme's is
+   dark on light; the accent Undo reads on both. */
+html[data-theme="dark"] .toast { background: #353535; color: var(--ink); box-shadow: var(--shadow-2), 0 0 0 1px var(--line-strong); }
+html[data-theme="dark"] .toast--error { background: #4E2320; color: #FFE1DD; box-shadow: var(--shadow-2), 0 0 0 1px #6E302B; }
+.toast-action {
+  margin-left: 12px; color: var(--accent); font-weight: 750; font-size: 13px;
+  text-transform: uppercase; letter-spacing: .05em;
+}

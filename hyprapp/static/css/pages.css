@@ -1,0 +1,56 @@
+/* The card pages: sign-in, sign-up, the setup wizard and errors. */
+
+/* ————— Auth, setup and error pages ————— */
+.auth-body { display: grid; place-items: center; min-height: 100dvh; padding: 24px; }
+.auth-wrap { width: 100%; display: grid; place-items: center; }
+.auth-card {
+  width: min(400px, 100%);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 22px;
+  box-shadow: var(--shadow-1);
+  padding: clamp(26px, 5vw, 40px);
+}
+.auth-mark { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-bottom: 26px; text-align: center; }
+.auth-mark .mark { width: 42px; height: 42px; margin-bottom: 4px; }
+.auth-mark .wordmark { font-size: 26px; }
+.auth-tag { font-size: 14px; color: var(--muted); }
+.auth-form { display: flex; flex-direction: column; gap: 15px; }
+.auth-form .cf-turnstile { display: flex; justify-content: center; }
+.auth-alt { text-align: center; margin-top: 20px; font-size: 13.5px; color: var(--muted); }
+.auth-alt a { font-weight: 650; color: var(--ink); text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.flash {
+  font-size: 13.5px; font-weight: 550;
+  padding: 10px 14px; border-radius: var(--radius-sm); margin-bottom: 14px;
+}
+.flash--error { background: rgb(220 70 60 / .1); color: #C4443B; border: 1px solid rgb(220 70 60 / .25); }
+.flash--info { background: var(--wash); color: var(--ink); border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); }
+.error-code { font-size: 64px; font-weight: 850; letter-spacing: -0.05em; line-height: 1; color: var(--accent); text-align: center; }
+.error-text { text-align: center; color: var(--muted); margin: 12px 0 22px; }
+
+.wizard { width: min(460px, 100%); }
+.wizard .auth-mark { margin-bottom: 14px; }
+.wiz-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 24px; }
+.wiz-dot { width: 22px; height: 4px; border-radius: 99px; background: var(--line); transition: background .25s; }
+.wiz-dot.is-active { background: var(--accent); }
+.wiz-step { display: none; }
+.wiz-step.is-active { display: block; animation: wiz-in .25s ease both; }
+@keyframes wiz-in { from { opacity: 0; transform: translateX(10px); } }
+.wiz-title { font-size: 20px; font-weight: 800; letter-spacing: -0.025em; margin-bottom: 8px; }
+.wiz-text { font-size: 14px; color: var(--muted); line-height: 1.55; margin-bottom: 16px; }
+.wiz-list { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+.wiz-list li { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.wiz-list li::before {
+  content: ""; width: 7px; height: 7px; border-radius: 2px; flex: none;
+  background: var(--accent); box-shadow: 0 0 6px var(--accent-glow);
+}
+.wiz-nav { display: flex; gap: 10px; justify-content: space-between; margin-top: 22px; }
+.wiz-nav .btn--primary:only-child { width: 100%; }
+.wiz-nav .btn--primary:not(:only-child) { flex: 1; }
+.wizard .auth-form { gap: 13px; }
+.wizard .form-error { margin-top: 12px; }
+.wiz-added { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.wiz-added li { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 550; color: var(--ink); }
+.wiz-added li::before {
+  content: ""; width: 12px; height: 7px; flex: none;
+  border-left: 2px solid var(--accent); border-bottom: 2px solid var(--accent);
+  transform: rotate(-45deg) translateY(-2px);
+}
