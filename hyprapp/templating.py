@@ -1,4 +1,7 @@
-"""What every template can use: globals, the context processor and filters."""
+"""What every template can use (globals, the context processor, filters),
+and the versioning of the static files they link: static_url() for any file,
+an import map for the JavaScript modules, and the cache lifetime that goes
+with a versioned URL."""
 
 import os
 import re
@@ -8,7 +11,7 @@ from pathlib import Path
 
 from flask import Flask, current_app, request, url_for
 
-from . import about_docs, icons
+from . import about_docs, auth, icons, turnstile
 from .models import utcnow
 from .security import csrf_token
 
@@ -93,7 +96,7 @@ def ago(dt: datetime) -> str:
 
 
 def init_app(app: Flask, version: str) -> None:
-    from . import auth, turnstile
+    app.get_send_file_max_age = static_max_age
 
     @app.context_processor
     def inject_globals():
@@ -110,7 +113,6 @@ def init_app(app: Flask, version: str) -> None:
         }
 
     app.add_template_global(static_url)
-    app.get_send_file_max_age = static_max_age
     app.add_template_global(icons.icon)
     app.add_template_global(js_preloads)
     app.add_template_global(js_import_map)
