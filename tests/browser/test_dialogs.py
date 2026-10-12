@@ -1,4 +1,5 @@
 """Dialogs: closing from the backdrop, and coming back after a reload."""
+
 import json
 
 from playwright.sync_api import expect
@@ -53,9 +54,9 @@ def test_the_sheet_closes_from_its_gutters_not_its_margins(page, api):
     expect(sheet).to_be_visible()
     box = sheet.bounding_box()
     assert box["width"] == 840
-    page.mouse.click(box["x"] + 30, 400)       # the sheet's own side, beside the article
+    page.mouse.click(box["x"] + 30, 400)  # the sheet's own side, beside the article
     expect(sheet).to_be_visible()
-    page.mouse.click(box["x"] - 40, 400)       # the backdrop beside the sheet
+    page.mouse.click(box["x"] - 40, 400)  # the backdrop beside the sheet
     expect(sheet).to_have_class("sheet is-closing")
     expect(sheet).to_be_hidden()
 
@@ -97,6 +98,7 @@ def test_the_page_behind_a_dialog_does_not_scroll(page, api):
 
 # ———— coming back after a reload ————
 
+
 def test_settings_come_back_with_their_section_and_scroll(page):
     page.locator(".sidebar-foot").get_by_role("button", name="Settings").click()
     page.locator('.settings-navitem[data-section="about"]').click()
@@ -126,7 +128,7 @@ def test_an_edit_in_progress_comes_back(page, api, server):
     expect(page.locator("#sheet-title")).to_have_text("Original")
     page.keyboard.press("e")
     expect(page.locator("#item-modal")).to_be_visible()
-    expect(page).to_have_url(f"{server.url}/")      # the sheet's ?open= has gone
+    expect(page).to_have_url(f"{server.url}/")  # the sheet's ?open= has gone
     page.fill("#item-title", "Changed")
     page.reload()
     expect(page.locator("#item-modal-title")).to_have_text("Edit record")
@@ -238,7 +240,7 @@ def test_restore_off_is_honored_on_the_way_back_too(page):
     page.add_init_script(PLANT)
     page.evaluate("s => sessionStorage.setItem('test-plant', s)", remembered)
     page.reload()
-    expect(page.locator("#search-modal")).to_be_visible()     # the control: it does come back
+    expect(page.locator("#search-modal")).to_be_visible()  # the control: it does come back
     page.keyboard.press("Escape")
     page.add_init_script(MARK_OFF)
     page.evaluate("s => sessionStorage.setItem('test-plant', s)", remembered)

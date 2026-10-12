@@ -1,23 +1,22 @@
 """The flask commands an operator runs inside the container."""
+
 import sqlite3
 
 
 def test_create_user_and_reset_password(app):
     runner = app.test_cli_runner()
-    result = runner.invoke(args=["create-user", "ops@example.com", "--admin"],
-                           input="password1\npassword1\n")
+    result = runner.invoke(args=["create-user", "ops@example.com", "--admin"], input="password1\npassword1\n")
     assert result.exit_code == 0, result.output
-    result = runner.invoke(args=["reset-password", "OPS@example.com"],
-                           input="password2\npassword2\n")
+    result = runner.invoke(args=["reset-password", "OPS@example.com"], input="password2\npassword2\n")
     assert result.exit_code == 0, result.output
     from hyprapp.models import User
+
     with app.app_context():
         assert User.query.one().check_password("password2")
 
 
 def test_create_user_refuses_a_short_password(app):
-    result = app.test_cli_runner().invoke(args=["create-user", "a@example.com"],
-                                          input="short\nshort\n")
+    result = app.test_cli_runner().invoke(args=["create-user", "a@example.com"], input="short\nshort\n")
     assert result.exit_code != 0
 
 
@@ -31,16 +30,19 @@ def test_backup_writes_a_readable_copy(app, tmp_path):
 
 # ———— characterization ————
 
+
 def users(app):
     from hyprapp.models import User
+
     with app.app_context():
         return {u.username: (u.name, u.is_admin) for u in User.query.all()}
 
 
 def test_create_user_says_what_it_made(app):
     runner = app.test_cli_runner()
-    result = runner.invoke(args=["create-user", "  Ops@Example.com ", "--admin", "--name", "Ops"],
-                           input="password1\npassword1\n")
+    result = runner.invoke(
+        args=["create-user", "  Ops@Example.com ", "--admin", "--name", "Ops"], input="password1\npassword1\n"
+    )
     assert result.output.endswith("Created ops@example.com (admin).\n")
     result = runner.invoke(args=["create-user", "plain@example.com"], input="password1\npassword1\n")
     assert result.output.endswith("Created plain@example.com.\n")

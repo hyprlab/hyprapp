@@ -9,6 +9,7 @@ Replace ``_work`` with whatever the app does on a schedule: fetch, prune, send,
 reconcile. If the work grows past a few seconds or needs more than one process,
 move it to its own container rather than growing this thread.
 """
+
 import logging
 import os
 import threading

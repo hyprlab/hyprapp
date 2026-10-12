@@ -1,5 +1,6 @@
 """The app factory's helpers: template globals and filters, configuration,
 the SQLite connection, and the model helpers."""
+
 import importlib
 import os
 import stat
@@ -14,6 +15,7 @@ from hyprapp.models import Item, Setting, User, db, get_setting, int_setting, se
 
 # ———— template globals and filters ————
 
+
 def test_static_url_carries_the_file_time(app):
     path = os.path.join(app.static_folder, "img", "logo.svg")
     with app.test_request_context():
@@ -23,21 +25,26 @@ def test_static_url_carries_the_file_time(app):
     assert missing == "/static/img/none.svg?v=0"
 
 
-@pytest.mark.parametrize("age, label", [
-    (timedelta(seconds=0), "now"),
-    (timedelta(seconds=59), "now"),
-    (timedelta(minutes=1), "1m ago"),
-    (timedelta(minutes=59), "59m ago"),
-    (timedelta(hours=1), "1h ago"),
-    (timedelta(hours=23), "23h ago"),
-    (timedelta(days=1), "1d ago"),
-    (timedelta(days=6), "6d ago"),
-])
+@pytest.mark.parametrize(
+    "age, label",
+    [
+        (timedelta(seconds=0), "now"),
+        (timedelta(seconds=59), "now"),
+        (timedelta(minutes=1), "1m ago"),
+        (timedelta(minutes=59), "59m ago"),
+        (timedelta(hours=1), "1h ago"),
+        (timedelta(hours=23), "23h ago"),
+        (timedelta(days=1), "1d ago"),
+        (timedelta(days=6), "6d ago"),
+    ],
+)
 def test_ago_relative(app, age, label):
     assert app.jinja_env.filters["ago"](utcnow() - age) == label
 
 
-@pytest.mark.parametrize("days, fmt", [(7, "%b %-d"), (364, "%b %-d"), (365, "%b %-d, %Y"), (900, "%b %-d, %Y")])
+@pytest.mark.parametrize(
+    "days, fmt", [(7, "%b %-d"), (364, "%b %-d"), (365, "%b %-d, %Y"), (900, "%b %-d, %Y")]
+)
 def test_ago_dates(app, days, fmt):
     when = utcnow() - timedelta(days=days)
     assert app.jinja_env.filters["ago"](when) == when.strftime(fmt)
@@ -48,38 +55,63 @@ def test_the_globals_every_template_reads(app):
         out = render_template_string(
             "{{ app_name }}|{{ app_tagline }}|{{ app_version }}|{{ app_package }}|{{ source_url }}|"
             "{{ allow_registration }}|{{ turnstile_site_key }}|{{ csrf_token()|length }}|"
-            "{{ app_changelog()[0].version }}")
-    assert out == (f"Hyprapp|A self-hosted Flask app.|{hyprapp.__version__}|hyprapp|"
-                   f"https://github.com/hyprlab/hyprapp|True||32|{hyprapp.__version__}")
+            "{{ app_changelog()[0].version }}"
+        )
+    assert out == (
+        f"Hyprapp|A self-hosted Flask app.|{hyprapp.__version__}|hyprapp|"
+        f"https://github.com/hyprlab/hyprapp|True||32|{hyprapp.__version__}"
+    )
 
 
 def test_the_csrf_token_is_stable_for_the_session(client, csrf, admin):
     html = client.get("/").data.decode()
     assert f'<meta name="csrf" content="{csrf}">' in html
-    assert html.count(f'name="_csrf" value="{csrf}"') == 1    # the sign-out form
+    assert html.count(f'name="_csrf" value="{csrf}"') == 1  # the sign-out form
 
 
 # ———— configuration ————
 
+
 @pytest.fixture()
 def config(monkeypatch, tmp_path):
     """Reload hyprapp.config under a given environment."""
+
     def load(**env):
-        for key in ("SESSION_COOKIE_SECURE", "TRUST_PROXY", "ALLOW_REGISTRATION", "WORKER_MINUTES",
-                    "ITEMS_PER_PAGE", "SECRET_KEY", "APP_NAME", "DATABASE_URL", "SOURCE_URL"):
+        for key in (
+            "SESSION_COOKIE_SECURE",
+            "TRUST_PROXY",
+            "ALLOW_REGISTRATION",
+            "WORKER_MINUTES",
+            "ITEMS_PER_PAGE",
+            "SECRET_KEY",
+            "APP_NAME",
+            "DATABASE_URL",
+            "SOURCE_URL",
+        ):
             monkeypatch.delenv(key, raising=False)
         monkeypatch.setenv("DATA_DIR", str(tmp_path / "data"))
         for key, value in env.items():
             monkeypatch.setenv(key, value)
         return importlib.reload(hyprapp.config)
+
     yield load
     importlib.reload(hyprapp.config)
 
 
-@pytest.mark.parametrize("raw, on", [
-    ("0", False), ("false", False), ("No", False), ("", False), ("  FALSE ", False),
-    ("1", True), ("yes", True), ("true", True), ("on", True),
-])
+@pytest.mark.parametrize(
+    "raw, on",
+    [
+        ("0", False),
+        ("false", False),
+        ("No", False),
+        ("", False),
+        ("  FALSE ", False),
+        ("1", True),
+        ("yes", True),
+        ("true", True),
+        ("on", True),
+    ],
+)
 def test_flags(config, raw, on):
     cfg = config(SESSION_COOKIE_SECURE=raw, ALLOW_REGISTRATION=raw).Config
     assert cfg.SESSION_COOKIE_SECURE is on and cfg.REMEMBER_COOKIE_SECURE is on
@@ -120,6 +152,7 @@ def test_database_url_wins(config):
 
 # ———— SQLite ————
 
+
 def test_the_connection_pragmas(app):
     with app.app_context():
         pragma = lambda name: db.session.execute(db.text(f"PRAGMA {name}")).scalar()
@@ -140,6 +173,7 @@ def test_foreign_keys_cascade_in_the_database(app, admin):
 
 
 # ———— models ————
+
 
 def test_display_name_and_password_stamp(app):
     with app.app_context():

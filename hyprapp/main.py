@@ -14,6 +14,7 @@ Two shapes of route live here:
 
 This module and ``Item`` are the part a new app replaces (docs/TEMPLATE.md).
 """
+
 from flask import Blueprint, abort, jsonify, render_template, request
 from flask_login import current_user, login_required
 from sqlalchemy import func, or_
@@ -33,6 +34,7 @@ SORTS = {
 
 
 # ———— The shell ————
+
 
 def _choice(name: str, allowed, default: str) -> str:
     value = request.args.get(name) or default
@@ -63,8 +65,14 @@ def index():
     page = max(1, request.args.get("page", type=int) or 1)
     per_page = int_setting("items_per_page", 40)
     items = _items_query(filter_name, sort).limit(per_page + 1).offset((page - 1) * per_page).all()
-    context = dict(items=items[:per_page], filter=filter_name, sort=sort, view=view,
-                   page=page, has_more=len(items) > per_page)
+    context = dict(
+        items=items[:per_page],
+        filter=filter_name,
+        sort=sort,
+        view=view,
+        page=page,
+        has_more=len(items) > per_page,
+    )
     if request.args.get("partial") == "1":
         return render_template("partials/records.html", **context)
 
@@ -78,6 +86,7 @@ def index():
 
 
 # ———— Records ————
+
 
 def _own_item(item_id: int) -> Item:
     """404, not 403, for someone else's record: its existence is not theirs to
@@ -167,8 +176,13 @@ def item_restore():
     title = (data.get("title") or "").strip()[:300]
     if not title:
         refuse("Nothing to restore.")
-    item = Item(user_id=current_user.id, title=title, body=_body(data),
-                pinned=bool(data.get("pinned")), done=bool(data.get("done")))
+    item = Item(
+        user_id=current_user.id,
+        title=title,
+        body=_body(data),
+        pinned=bool(data.get("pinned")),
+        done=bool(data.get("done")),
+    )
     db.session.add(item)
     db.session.commit()
     return jsonify(ok=True, item=_item_json(item))
@@ -184,14 +198,17 @@ def search():
         return jsonify(results=[])
     like = "%" + query.lower().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
     rows = (
-        Item.query
-        .filter(Item.user_id == current_user.id)
-        .filter(or_(func.lower(Item.title).like(like, escape="\\"),
-                    func.lower(Item.body).like(like, escape="\\")))
+        Item.query.filter(Item.user_id == current_user.id)
+        .filter(
+            or_(func.lower(Item.title).like(like, escape="\\"), func.lower(Item.body).like(like, escape="\\"))
+        )
         .order_by(Item.created_at.desc())
-        .limit(20).all()
+        .limit(20)
+        .all()
     )
-    return jsonify(results=[
-        {"id": r.id, "title": r.title, "done": r.done, "when": r.created_at.strftime("%b %-d")}
-        for r in rows
-    ])
+    return jsonify(
+        results=[
+            {"id": r.id, "title": r.title, "done": r.done, "when": r.created_at.strftime("%b %-d")}
+            for r in rows
+        ]
+    )

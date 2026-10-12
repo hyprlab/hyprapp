@@ -4,6 +4,7 @@ Usernames are email addresses: validated and lowercased at registration. The
 sign-in field is deliberately ``type=text`` so an account created before that
 rule (an app that started with plain usernames) can still sign in.
 """
+
 import threading
 import time
 
@@ -143,8 +144,9 @@ def register():
     if problem:
         return _refused("auth/register.html", problem, 400)
     # The first account on a fresh instance becomes the admin.
-    user = User.create(username, password, name=clean_name(request.form.get("name")),
-                       is_admin=User.query.count() == 0)
+    user = User.create(
+        username, password, name=clean_name(request.form.get("name")), is_admin=User.query.count() == 0
+    )
     login_user(user)
     return redirect(url_for("main.index"))
 

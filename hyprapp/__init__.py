@@ -6,13 +6,28 @@ the first-run gate (setup), error pages (errors), what templates see
 (templating), migrations, and the background worker. Blueprints hold the
 routes.
 """
+
 import logging
 
 from flask import Flask
 
 from . import database  # noqa: F401  (its SQLite connection listeners register on import)
-from . import (account, admin, auth, cli, errors, health, main, migrations, security, setup,
-               templating, turnstile, validation, worker)
+from . import (
+    account,
+    admin,
+    auth,
+    cli,
+    errors,
+    health,
+    main,
+    migrations,
+    security,
+    setup,
+    templating,
+    turnstile,
+    validation,
+    worker,
+)
 from .config import Config
 from .models import db
 
@@ -32,6 +47,7 @@ def create_app(config_class=Config) -> Flask:
 
     if app.config["TRUST_PROXY"] > 0:
         from werkzeug.middleware.proxy_fix import ProxyFix
+
         hops = app.config["TRUST_PROXY"]
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=hops, x_proto=hops, x_host=hops)
 

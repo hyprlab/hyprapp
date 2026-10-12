@@ -11,6 +11,7 @@ tests/browser/visual-diffs/, which CI uploads.
 A missing baseline is written and the test skipped, so a new shot (or a new
 app from the template) starts its own; in CI a missing baseline fails.
 """
+
 import io
 import os
 from pathlib import Path
@@ -51,8 +52,10 @@ def compare(png: bytes, name: str) -> None:
     total = actual.size[0] * actual.size[1]
     if changed > total * MAX_DIFF_RATIO:
         _write_failure(name, actual, (baseline, mask))
-        pytest.fail(f"{name}: {changed} of {total} pixels differ ({changed / total:.3%}); "
-                    f"see {DIFFS.relative_to(HERE.parent.parent)}/{name}.diff.png")
+        pytest.fail(
+            f"{name}: {changed} of {total} pixels differ ({changed / total:.3%}); "
+            f"see {DIFFS.relative_to(HERE.parent.parent)}/{name}.diff.png"
+        )
 
 
 def _write_failure(name, actual, diff) -> None:

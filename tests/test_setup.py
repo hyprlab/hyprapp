@@ -1,4 +1,5 @@
 """The first-run wizard: shown while there are no users, then never again."""
+
 import pytest
 
 from hyprapp.models import User, get_setting
@@ -16,17 +17,20 @@ def test_the_wizard_page(client):
     assert 'data-step="3"' in html and 'id="wiz-worker" type="number" min="0" max="1440"' in html
 
 
-@pytest.mark.parametrize("fields, error", [
-    ({"username": "nope"}, "Enter a valid email address."),
-    ({"username": None}, "Enter a valid email address."),
-    ({"username": "x" * 75 + "@e.com"}, "Enter a valid email address."),
-    ({"password": "short"}, "Passwords need at least 8 characters."),
-    ({"password": None}, "Passwords need at least 8 characters."),
-    ({"worker_minutes": "x"}, "The background interval must be a number."),
-    ({"worker_minutes": None}, "The background interval must be a number."),
-    ({"worker_minutes": -1}, "The background interval must be between 0 and 1440 minutes."),
-    ({"worker_minutes": 1441}, "The background interval must be between 0 and 1440 minutes."),
-])
+@pytest.mark.parametrize(
+    "fields, error",
+    [
+        ({"username": "nope"}, "Enter a valid email address."),
+        ({"username": None}, "Enter a valid email address."),
+        ({"username": "x" * 75 + "@e.com"}, "Enter a valid email address."),
+        ({"password": "short"}, "Passwords need at least 8 characters."),
+        ({"password": None}, "Passwords need at least 8 characters."),
+        ({"worker_minutes": "x"}, "The background interval must be a number."),
+        ({"worker_minutes": None}, "The background interval must be a number."),
+        ({"worker_minutes": -1}, "The background interval must be between 0 and 1440 minutes."),
+        ({"worker_minutes": 1441}, "The background interval must be between 0 and 1440 minutes."),
+    ],
+)
 def test_refusals_create_nothing(app, client, csrf, fields, error):
     resp = submit(client, csrf, **fields)
     assert resp.status_code == 400 and resp.get_json() == {"error": error}
@@ -36,8 +40,14 @@ def test_refusals_create_nothing(app, client, csrf, fields, error):
 
 
 def test_setting_up(app, client, csrf):
-    resp = submit(client, csrf, username="  Admin@Example.COM ", name="  Ada  ",
-                  registration_open=False, worker_minutes="30")
+    resp = submit(
+        client,
+        csrf,
+        username="  Admin@Example.COM ",
+        name="  Ada  ",
+        registration_open=False,
+        worker_minutes="30",
+    )
     assert resp.status_code == 200 and resp.get_json() == {"ok": True}
     assert client.get_cookie("remember_token") is not None
     assert client.get("/").status_code == 200

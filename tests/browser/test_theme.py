@@ -1,4 +1,5 @@
 """Light, dark and system themes, set before the first paint."""
+
 import pytest
 from playwright.sync_api import expect
 
@@ -14,13 +15,20 @@ new MutationObserver(function (records, observer) {
 
 
 def theme(page):
-    return page.evaluate("[document.documentElement.dataset.themePref, document.documentElement.dataset.theme]")
+    return page.evaluate(
+        "[document.documentElement.dataset.themePref, document.documentElement.dataset.theme]"
+    )
 
 
-@pytest.mark.parametrize("pref, scheme, expected", [
-    ("system", "dark", "dark"), ("system", "light", "light"),
-    ("dark", "light", "dark"), ("light", "dark", "light"),
-])
+@pytest.mark.parametrize(
+    "pref, scheme, expected",
+    [
+        ("system", "dark", "dark"),
+        ("system", "light", "light"),
+        ("dark", "light", "dark"),
+        ("light", "dark", "light"),
+    ],
+)
 def test_the_theme_is_set_before_the_body_exists(new_page, api, pref, scheme, expected):
     api.post("/settings", {"theme": pref})
     page = new_page(api, color_scheme=scheme)
@@ -28,8 +36,9 @@ def test_the_theme_is_set_before_the_body_exists(new_page, api, pref, scheme, ex
     page.goto("/")
     assert page.evaluate("window.__themeAtBody") == expected
     assert theme(page) == [pref, expected]
-    inline = page.evaluate("Array.from(document.head.querySelectorAll('script:not([src])'))"
-                           ".map(s => s.textContent).join('')")
+    inline = page.evaluate(
+        "Array.from(document.head.querySelectorAll('script:not([src])')).map(s => s.textContent).join('')"
+    )
     assert "data-theme" in inline
 
 
@@ -37,6 +46,7 @@ def test_the_theme_is_set_before_the_body_exists(new_page, api, pref, scheme, ex
 def test_signed_out_pages_follow_the_system(new_page, server, path):
     if path == "/login":
         from .conftest import Api
+
         Api(server).setup()
     page = new_page(color_scheme="dark")
     page.add_init_script(THEME_AT_BODY)

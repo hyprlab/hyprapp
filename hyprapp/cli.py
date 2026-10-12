@@ -14,6 +14,7 @@ account; there is no email-based reset, because the app sends no email.
 ``turnstile off`` is the way back in when a Turnstile widget stops working
 (its hostname list changed, Cloudflare is unreachable) and nobody can sign in.
 """
+
 import sqlite3
 from pathlib import Path
 

@@ -1,6 +1,7 @@
 """Static files reach the browser versioned, so a redeploy is never served
 from a stale cache. The JavaScript modules import each other by relative
 paths, which carry no version; the import map in base.html adds it."""
+
 import json
 import os
 import re
@@ -11,9 +12,12 @@ import pytest
 JS = Path(__file__).resolve().parent.parent / "hyprapp" / "static" / "js"
 # The specifier of every import "x", import ... from "x", export ... from "x",
 # and dynamic import("x").
-SPECIFIER = re.compile(r"""^\s*import\s*["']([^"']+)["']"""
-                       r"""|^\s*(?:import|export)\b[^;"']*?\bfrom\s*["']([^"']+)["']"""
-                       r"""|\bimport\(\s*["']([^"']+)["']""", re.M)
+SPECIFIER = re.compile(
+    r"""^\s*import\s*["']([^"']+)["']"""
+    r"""|^\s*(?:import|export)\b[^;"']*?\bfrom\s*["']([^"']+)["']"""
+    r"""|\bimport\(\s*["']([^"']+)["']""",
+    re.M,
+)
 
 
 def page(client, path):
@@ -43,8 +47,9 @@ def test_every_import_is_a_relative_path_to_a_module_here():
 @pytest.mark.parametrize("path", ["/setup", "/login"])
 def test_every_module_is_mapped_to_its_versioned_url(client, csrf, path):
     if path == "/login":
-        client.post("/setup", json={"username": "a@example.com", "password": "password1"},
-                    headers={"X-CSRF": csrf})
+        client.post(
+            "/setup", json={"username": "a@example.com", "password": "password1"}, headers={"X-CSRF": csrf}
+        )
         client.post("/logout", headers={"X-CSRF": csrf})
     mapping, _, _ = page(client, path)
     assert mapping == {f"/static/js/{m.name}": versioned(m.name) for m in JS.glob("*.js")}

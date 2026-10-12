@@ -1,5 +1,6 @@
 """The detail sheet: opening it from a card, a link or the keyboard, its
 toggles, delete with Undo, copying the link, and j and k."""
+
 import re
 
 from playwright.sync_api import expect

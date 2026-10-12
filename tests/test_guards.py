@@ -1,5 +1,6 @@
 """What stands in front of every route: the setup gate, sign-in, the admin
 check, CSRF, the error shapes and the response headers."""
+
 from urllib.parse import parse_qs, urlparse
 
 import pytest
@@ -12,17 +13,30 @@ SESSION_EXPIRED = {"error": "Your session expired. Reload the page and try again
 SIGNED_OUT = {"error": "You are signed out. Reload the page to sign in again."}
 
 ADMIN_POSTS = [
-    "/admin/instance", "/admin/registration", "/admin/turnstile", "/admin/turnstile/disable",
-    "/admin/users", "/admin/users/1/password", "/admin/users/1/toggle-admin",
+    "/admin/instance",
+    "/admin/registration",
+    "/admin/turnstile",
+    "/admin/turnstile/disable",
+    "/admin/users",
+    "/admin/users/1/password",
+    "/admin/users/1/toggle-admin",
     "/admin/users/1/delete",
 ]
-USER_POSTS = ["/items", "/items/1", "/items/1/delete", "/items/restore", "/settings",
-              "/account/password", "/logout"]
+USER_POSTS = [
+    "/items",
+    "/items/1",
+    "/items/1/delete",
+    "/items/restore",
+    "/settings",
+    "/account/password",
+    "/logout",
+]
 ALL_POSTS = USER_POSTS + ADMIN_POSTS + ["/setup", "/login", "/register"]
 SIGNED_IN_GETS = ["/", "/items/1", "/search?q=abc"]
 
 
 # ———— CSRF ————
+
 
 @pytest.mark.parametrize("url", ALL_POSTS)
 def test_a_post_without_the_token_is_refused(client, csrf, admin, url):
@@ -54,6 +68,7 @@ def test_other_mutating_methods_need_the_token_too(client, csrf, admin, method):
 
 
 # ———— sign-in required ————
+
 
 @pytest.mark.parametrize("url", SIGNED_IN_GETS)
 def test_signed_out_api_calls_get_a_json_401(app, admin, url):
@@ -94,6 +109,7 @@ def test_a_session_for_an_unknown_id_is_signed_out(app, admin):
 
 # ———— admin required ————
 
+
 @pytest.mark.parametrize("url", ADMIN_POSTS)
 def test_admin_routes_refuse_a_plain_account(second_user, url):
     other, token = second_user
@@ -102,8 +118,9 @@ def test_admin_routes_refuse_a_plain_account(second_user, url):
     assert resp.get_json() == {"error": Forbidden.description}
 
 
-@pytest.mark.parametrize("url", ["/admin/users/99/delete", "/admin/users/99/password",
-                                 "/admin/users/99/toggle-admin"])
+@pytest.mark.parametrize(
+    "url", ["/admin/users/99/delete", "/admin/users/99/password", "/admin/users/99/toggle-admin"]
+)
 def test_the_admin_check_comes_before_looking_up_the_user(second_user, url):
     other, token = second_user
     assert other.post(url, json={}, headers={"X-CSRF": token}).status_code == 403
@@ -111,10 +128,19 @@ def test_the_admin_check_comes_before_looking_up_the_user(second_user, url):
 
 # ———— the setup gate ————
 
-@pytest.mark.parametrize("method, url", [
-    ("get", "/"), ("get", "/login"), ("get", "/register"), ("get", "/search?q=ab"),
-    ("post", "/items"), ("post", "/login"), ("get", "/no-such-page"),
-])
+
+@pytest.mark.parametrize(
+    "method, url",
+    [
+        ("get", "/"),
+        ("get", "/login"),
+        ("get", "/register"),
+        ("get", "/search?q=ab"),
+        ("post", "/items"),
+        ("post", "/login"),
+        ("get", "/no-such-page"),
+    ],
+)
 def test_before_setup_everything_goes_to_the_wizard(client, method, url):
     resp = getattr(client, method)(url)
     assert resp.status_code == 302 and resp.headers["Location"].endswith("/setup")
@@ -133,11 +159,14 @@ def test_the_wizard_post_needs_the_token(client):
 
 # ———— errors ————
 
+
 @pytest.fixture()
 def failing_app(app):
     """Routes that fail on purpose, added before the first request."""
+
     def boom():
         raise RuntimeError("on purpose")
+
     app.add_url_rule("/_boom", "boom", boom)
     app.add_url_rule("/_forbidden", "forbidden", lambda: abort(403))
     app.add_url_rule("/_teapot", "teapot", lambda: abort(418))
@@ -148,13 +177,15 @@ def failing_app(app):
 def signed_in(failing_app):
     client = failing_app.test_client()
     token = token_for(client)
-    client.post("/setup", json={"username": "a@example.com", "password": "password1"},
-                headers={"X-CSRF": token})
+    client.post(
+        "/setup", json={"username": "a@example.com", "password": "password1"}, headers={"X-CSRF": token}
+    )
     return client, token
 
 
 def test_a_server_error_is_logged_and_shown(signed_in, caplog, monkeypatch):
     from hyprapp.models import db
+
     rolled_back = []
     monkeypatch.setattr(db.session, "rollback", lambda: rolled_back.append(True))
     client, token = signed_in
@@ -169,10 +200,13 @@ def test_a_server_error_is_logged_and_shown(signed_in, caplog, monkeypatch):
     assert "unhandled error on GET /_boom" in caplog.text
 
 
-@pytest.mark.parametrize("url, code, title, text", [
-    ("/no-such-page", 404, "Not Found", "There is nothing at this address."),
-    ("/_forbidden", 403, "Forbidden", "Your account does not have access to this."),
-])
+@pytest.mark.parametrize(
+    "url, code, title, text",
+    [
+        ("/no-such-page", 404, "Not Found", "There is nothing at this address."),
+        ("/_forbidden", 403, "Forbidden", "Your account does not have access to this."),
+    ],
+)
 def test_error_pages(signed_in, url, code, title, text):
     client, _ = signed_in
     page = client.get(url)
@@ -197,16 +231,19 @@ def test_a_wrong_method_is_405(signed_in):
     assert api.get_json() == {"error": MethodNotAllowed.description}
 
 
-@pytest.mark.parametrize("headers, wants_json", [
-    ({}, False),
-    ({"Accept": "text/html"}, False),
-    ({"Accept": "*/*"}, False),
-    ({"Accept": "text/html, application/json"}, False),
-    ({"Accept": "application/json"}, True),
-    ({"Accept": "application/json, text/html;q=0.5"}, True),
-    ({"X-CSRF": "anything"}, True),
-    ({"Content-Type": "application/json"}, True),
-])
+@pytest.mark.parametrize(
+    "headers, wants_json",
+    [
+        ({}, False),
+        ({"Accept": "text/html"}, False),
+        ({"Accept": "*/*"}, False),
+        ({"Accept": "text/html, application/json"}, False),
+        ({"Accept": "application/json"}, True),
+        ({"Accept": "application/json, text/html;q=0.5"}, True),
+        ({"X-CSRF": "anything"}, True),
+        ({"Content-Type": "application/json"}, True),
+    ],
+)
 def test_json_or_a_page(signed_in, headers, wants_json):
     client, _ = signed_in
     resp = client.get("/no-such-page", headers=headers)
@@ -241,13 +278,16 @@ def test_only_html_is_no_store(client, csrf, admin):
 
 def test_health_reports_the_version(client):
     from hyprapp import __version__
+
     assert client.get("/healthz").get_json() == {"ok": True, "version": __version__}
 
 
 def test_health_fails_when_the_database_does(client, monkeypatch):
     from hyprapp.models import db
+
     def broken(*a, **k):
         raise RuntimeError("database gone")
+
     monkeypatch.setattr(db.session, "execute", broken)
     resp = client.get("/healthz")
     assert resp.status_code == 503 and resp.get_json() == {"ok": False}

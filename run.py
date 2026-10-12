@@ -2,6 +2,7 @@
 
 Production runs gunicorn against ``hyprapp:create_app()``; see the Dockerfile.
 """
+
 from hyprapp import create_app
 
 app = create_app()

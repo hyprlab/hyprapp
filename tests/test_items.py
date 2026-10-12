@@ -4,6 +4,7 @@ search. The list it feeds is test_listing.py.
 Characterization: each test pins what the routes do today, error texts
 included, since the client shows them to people verbatim.
 """
+
 import re
 import pytest
 from werkzeug.exceptions import NotFound
@@ -14,6 +15,7 @@ from .conftest import make
 
 
 # ———— create ————
+
 
 def test_create_returns_the_whole_record(post, admin):
     resp = post("/items", {"title": "  Title  ", "body": "  Line one\n\nline   two  "})
@@ -48,13 +50,13 @@ def test_create_ignores_pinned_and_done(post, admin):
 
 
 def test_a_body_that_is_not_json_counts_as_empty(client, csrf, admin):
-    resp = client.post("/items", data="title=x", headers={"X-CSRF": csrf},
-                       content_type="text/plain")
+    resp = client.post("/items", data="title=x", headers={"X-CSRF": csrf}, content_type="text/plain")
     assert resp.status_code == 400
     assert resp.get_json() == {"error": "Give it a title."}
 
 
 # ———— read ————
+
 
 def test_detail(client, csrf, post, admin):
     item = make(post, "Mine")
@@ -69,6 +71,7 @@ def test_a_missing_record_is_a_json_404(client, csrf, admin):
 
 
 # ———— update ————
+
 
 def test_update_changes_only_what_it_is_sent(client, csrf, post, admin):
     item = make(post, "Before", body="Body")
@@ -92,12 +95,15 @@ def test_update_changes_only_what_it_is_sent(client, csrf, post, admin):
     assert updated["body"] == ""
 
 
-@pytest.mark.parametrize("title, error", [
-    ("", "Give it a title."),
-    ("   ", "Give it a title."),
-    (None, "Give it a title."),
-    ("x" * 301, "Titles are limited to 300 characters."),
-])
+@pytest.mark.parametrize(
+    "title, error",
+    [
+        ("", "Give it a title."),
+        ("   ", "Give it a title."),
+        (None, "Give it a title."),
+        ("x" * 301, "Titles are limited to 300 characters."),
+    ],
+)
 def test_update_refuses_a_bad_title_and_saves_nothing(client, csrf, post, admin, title, error):
     item = make(post, "Kept")
     resp = post(f"/items/{item['id']}", {"title": title, "body": "changed", "pinned": True})
@@ -111,6 +117,7 @@ def test_update_of_a_missing_record_is_404(post, admin):
 
 
 # ———— delete and restore ————
+
 
 def test_delete_returns_a_snapshot(client, csrf, post, admin):
     item = make(post, "Doomed", body="Gone soon")
@@ -130,9 +137,13 @@ def test_restore_makes_a_new_record_from_the_snapshot(post, admin):
     resp = post("/items/restore", {**snapshot, "id": 777})
     restored = resp.get_json()["item"]
     assert resp.get_json()["ok"] is True
-    assert restored["id"] == newer["id"] + 1   # the snapshot's id is ignored
-    assert (restored["title"], restored["body"], restored["pinned"], restored["done"]) == \
-        ("Back", "Body", True, True)
+    assert restored["id"] == newer["id"] + 1  # the snapshot's id is ignored
+    assert (restored["title"], restored["body"], restored["pinned"], restored["done"]) == (
+        "Back",
+        "Body",
+        True,
+        True,
+    )
 
 
 def test_restore_trims_and_truncates_the_title(post, admin):
@@ -149,6 +160,7 @@ def test_restore_needs_a_title(post, admin, body):
 
 # ———— search ————
 
+
 def test_search_needs_two_characters(client, post, admin):
     make(post, "Alpha")
     assert client.get("/search").get_json() == {"results": []}
@@ -161,7 +173,7 @@ def test_search_matches_title_or_body_case_insensitively(client, post, admin):
     make(post, "Milkshake recipe")
     make(post, "Unrelated")
     results = client.get("/search?q=milk").get_json()["results"]
-    assert [r["title"] for r in results] == ["Milkshake recipe", "Groceries"]   # newest first
+    assert [r["title"] for r in results] == ["Milkshake recipe", "Groceries"]  # newest first
     assert set(results[0]) == {"id", "title", "done", "when"}
     assert re.fullmatch(r"[A-Z][a-z]{2} \d{1,2}", results[0]["when"])
 

@@ -6,6 +6,7 @@ changes while the app runs live in the ``settings`` table instead (see
 ``models.get_setting``); the variables here are only the fresh-install
 defaults for those.
 """
+
 import os
 import secrets
 from pathlib import Path
@@ -55,9 +56,7 @@ def from_environment() -> type:
         SOURCE_URL = os.environ.get("SOURCE_URL", "https://github.com/hyprlab/hyprapp")
 
         SECRET_KEY = _secret_key(data_dir)
-        SQLALCHEMY_DATABASE_URI = os.environ.get(
-            "DATABASE_URL", f"sqlite:///{data_dir / 'hyprapp.db'}"
-        )
+        SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", f"sqlite:///{data_dir / 'hyprapp.db'}")
         SQLALCHEMY_TRACK_MODIFICATIONS = False
         SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
 

@@ -1,4 +1,5 @@
 """Errors: JSON for the API, a page for people."""
+
 import logging
 
 from flask import Flask, jsonify, render_template, request
@@ -31,8 +32,9 @@ def wants_json() -> bool:
 def http_error(err):
     if wants_json():
         return jsonify(error=err.description or err.name), err.code
-    return render_template("error.html", code=err.code, title=err.name,
-                           message=ERROR_TEXT.get(err.code, err.description)), err.code
+    return render_template(
+        "error.html", code=err.code, title=err.name, message=ERROR_TEXT.get(err.code, err.description)
+    ), err.code
 
 
 def server_error(err):
@@ -40,8 +42,7 @@ def server_error(err):
     db.session.rollback()
     if wants_json():
         return jsonify(error="Something went wrong on the server."), 500
-    return render_template("error.html", code=500, title="Server error",
-                           message=ERROR_TEXT[500]), 500
+    return render_template("error.html", code=500, title="Server error", message=ERROR_TEXT[500]), 500
 
 
 def init_app(app: Flask) -> None:

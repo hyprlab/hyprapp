@@ -1,4 +1,5 @@
 """Schema changes for databases created by older versions."""
+
 from flask import Flask
 
 from .models import db
@@ -20,6 +21,10 @@ def migrate(app: Flask) -> None:
     def columns(table: str) -> set[str]:
         return {c["name"] for c in inspector.get_columns(table)}
 
+    # The steps stay byte for byte as they shipped, so the formatter is told
+    # to leave them alone. New steps go at the end, before "fmt: on".
+    # fmt: off
+
     # The shape every step takes. Keep it as the pattern, or delete it once
     # the app has steps of its own.
     if "infinite_scroll" not in columns("users"):
@@ -28,3 +33,5 @@ def migrate(app: Flask) -> None:
         ))
         db.session.commit()
         app.logger.info("migrated: added users.infinite_scroll")
+
+    # fmt: on

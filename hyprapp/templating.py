@@ -1,4 +1,5 @@
 """What every template can use: globals, the context processor and filters."""
+
 import os
 import re
 from datetime import datetime

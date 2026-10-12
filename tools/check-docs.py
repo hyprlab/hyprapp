@@ -15,6 +15,7 @@ does not go out while it fails (docs/RELEASING.md).
 
 Markdown that git ignores or excludes (CLAUDE.md is local only) is skipped.
 """
+
 import re
 import subprocess
 import sys
@@ -27,10 +28,21 @@ SEMVER = re.compile(
     r"(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?"
     r"(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$"
 )
-LINK = re.compile(r"(?<!!)\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)|!\[[^\]]*\]\(([^)\s]+)\)|(?:src|href)=\"([^\"]+)\"")
+LINK = re.compile(
+    r"(?<!!)\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)|!\[[^\]]*\]\(([^)\s]+)\)|(?:src|href)=\"([^\"]+)\""
+)
 HEADING = re.compile(r"^#{1,6}\s+(.*?)\s*#*$", re.M)
 FENCE = re.compile(r"^```.*?^```", re.M | re.S)
-SKIP_DIRS = {".git", ".venv", "venv", "node_modules", "claude-memory-hylki", ".claude", ".pytest_cache", "var"}
+SKIP_DIRS = {
+    ".git",
+    ".venv",
+    "venv",
+    "node_modules",
+    "claude-memory-hylki",
+    ".claude",
+    ".pytest_cache",
+    "var",
+}
 
 problems: list[str] = []
 
@@ -43,14 +55,19 @@ def markdown_files() -> list[Path]:
     try:
         out = subprocess.run(
             ["git", "ls-files", "--cached", "--others", "--exclude-standard", "*.md"],
-            cwd=ROOT, capture_output=True, text=True, check=True,
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
         ).stdout.split()
         files = [ROOT / name for name in out]
     except (OSError, subprocess.CalledProcessError):
-        files = list(ROOT.rglob("*.md"))    # not a git repository yet
-    return sorted(p for p in files
-                  if p.exists() and p.name != "CLAUDE.md"
-                  and not SKIP_DIRS & set(p.relative_to(ROOT).parts))
+        files = list(ROOT.rglob("*.md"))  # not a git repository yet
+    return sorted(
+        p
+        for p in files
+        if p.exists() and p.name != "CLAUDE.md" and not SKIP_DIRS & set(p.relative_to(ROOT).parts)
+    )
 
 
 def slugify(heading: str) -> str:
@@ -85,7 +102,7 @@ def check_links(files: list[Path]) -> None:
         for groups in LINK.findall(text):
             target = next(g for g in groups if g)
             if re.match(r"^[a-z][a-z0-9+.-]*:", target, re.I):
-                continue   # http:, https:, mailto: and friends
+                continue  # http:, https:, mailto: and friends
             head, _, fragment = target.partition("#")
             dest = path if not head else (path.parent / head).resolve()
             if not dest.exists():
@@ -126,7 +143,7 @@ def sort_key(version: str):
     m = SEMVER.match(version)
     core = tuple(int(m.group(i)) for i in (1, 2, 3))
     if m.group(4) is None:
-        return core + (1,)          # a release outranks its prereleases
+        return core + (1,)  # a release outranks its prereleases
     ids = tuple((0, int(x), "") if x.isdigit() else (1, 0, x) for x in m.group(4).split("."))
     return core + (0,) + ids
 

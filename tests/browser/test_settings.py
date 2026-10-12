@@ -1,5 +1,6 @@
 """The settings window: a rail and a pane on the desktop, a list and a pane
 on a phone."""
+
 import re
 
 import pytest
@@ -7,8 +8,13 @@ from playwright.sync_api import expect
 
 from .conftest import PHONE
 
-SECTIONS = [("appearance", "Appearance"), ("account", "Account"), ("admin", "Admin"),
-            ("security", "Security"), ("about", "About")]
+SECTIONS = [
+    ("appearance", "Appearance"),
+    ("account", "Account"),
+    ("admin", "Admin"),
+    ("security", "Security"),
+    ("about", "About"),
+]
 
 
 def open_settings(page):
@@ -69,8 +75,14 @@ def test_the_account_row_opens_the_account_section(page):
 def test_arrow_keys_move_through_the_rail(page):
     open_settings(page)
     page.locator(".settings-navitem.is-active").focus()
-    for key, expected in [("ArrowDown", "account"), ("ArrowDown", "admin"), ("End", "about"),
-                          ("ArrowDown", "appearance"), ("ArrowUp", "about"), ("Home", "appearance")]:
+    for key, expected in [
+        ("ArrowDown", "account"),
+        ("ArrowDown", "admin"),
+        ("End", "about"),
+        ("ArrowDown", "appearance"),
+        ("ArrowUp", "about"),
+        ("Home", "appearance"),
+    ]:
         page.keyboard.press(key)
         assert active(page) == expected, key
         expect(page.locator(f'.settings-navitem[data-section="{expected}"]')).to_be_focused()
@@ -120,7 +132,7 @@ def test_changing_the_password(page, api):
     expect(page.locator("#pw-current")).to_have_value("")
     expect(page.locator("#pw-new")).to_have_value("")
     page.reload()
-    expect(page.locator(".context-title")).to_have_text("Open")    # still signed in
+    expect(page.locator(".context-title")).to_have_text("Open")  # still signed in
 
 
 def phone_settings(new_page, api):

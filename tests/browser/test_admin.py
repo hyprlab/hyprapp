@@ -1,4 +1,5 @@
 """Every admin action, from Settings."""
+
 import re
 
 from playwright.sync_api import expect
@@ -78,6 +79,7 @@ def test_resetting_a_password(page, api, server):
     def answer(dialog):
         prompts.append(dialog.message)
         dialog.accept(answers.pop(0)) if answers[0] is not None else (answers.pop(0), dialog.dismiss())
+
     answers = [None, "short", "password9"]
     page.on("dialog", answer)
     button = row(page, "bob@example.com").get_by_role("button", name="Reset password")
@@ -98,10 +100,14 @@ def test_toggling_admin(page, api):
     page.reload()
     admin_section(page)
     expect(row(page, "admin@example.com").get_by_role("button", name=re.compile("admin"))).to_have_count(0)
-    wait_for_reload(page, lambda: row(page, "bob@example.com").get_by_role("button", name="Make admin").click())
+    wait_for_reload(
+        page, lambda: row(page, "bob@example.com").get_by_role("button", name="Make admin").click()
+    )
     expect(page.locator("#toast")).to_have_text("bob@example.com is now an admin")
     expect(row(page, "bob@example.com").locator(".chip")).to_have_text("admin")
-    wait_for_reload(page, lambda: row(page, "bob@example.com").get_by_role("button", name="Remove admin").click())
+    wait_for_reload(
+        page, lambda: row(page, "bob@example.com").get_by_role("button", name="Remove admin").click()
+    )
     expect(page.locator("#toast")).to_have_text("bob@example.com is no longer an admin")
 
 
@@ -116,7 +122,9 @@ def test_deleting_a_user(page, api):
     expect(row(page, "bob@example.com")).to_have_count(1)
     assert messages == ['Delete "bob@example.com" and everything they own? This cannot be undone.']
     page.once("dialog", lambda d: d.accept())
-    wait_for_reload(page, lambda: row(page, "bob@example.com").get_by_role("button", name="Delete user").click())
+    wait_for_reload(
+        page, lambda: row(page, "bob@example.com").get_by_role("button", name="Delete user").click()
+    )
     expect(page.locator("#toast")).to_have_text("Deleted bob@example.com")
     expect(row(page, "bob@example.com")).to_have_count(0)
 

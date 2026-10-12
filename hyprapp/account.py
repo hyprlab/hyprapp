@@ -1,4 +1,5 @@
 """The signed-in person's own preferences and password."""
+
 from flask import Blueprint, jsonify, request, session
 from flask_login import current_user, login_required, login_user
 

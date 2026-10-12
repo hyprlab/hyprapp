@@ -1,4 +1,5 @@
 """/healthz: whether the app can serve, for Docker and any proxy in front."""
+
 from flask import Blueprint, jsonify
 
 from .models import db

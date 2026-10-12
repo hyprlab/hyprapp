@@ -5,12 +5,21 @@ to /setup. The wizard creates the admin account and the initial instance
 settings in one POST, signs the admin in, and hands over to the app. There is
 no seeded account and no default password.
 """
+
 from flask import Blueprint, Flask, current_app, jsonify, redirect, render_template, request, url_for
 from flask_login import login_user
 
 from .models import User, db, set_setting
-from .validation import (bounded_int, check, clean_email, clean_name, email_problem, json_body,
-                         password_problem, refuse)
+from .validation import (
+    bounded_int,
+    check,
+    clean_email,
+    clean_name,
+    email_problem,
+    json_body,
+    password_problem,
+    refuse,
+)
 
 bp = Blueprint("setup", __name__)
 

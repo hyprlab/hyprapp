@@ -6,6 +6,7 @@ Masked: the version and the changelog, which change with each release, and
 any paragraph with <code> in it, which is drawn in the system's monospace
 font and so differs from machine to machine.
 """
+
 import sqlite3
 from contextlib import closing
 
@@ -41,8 +42,10 @@ def shots_server(tmp_path_factory):
             admin.item(title, body, **flags)
         with closing(sqlite3.connect(server.data_dir / "hyprapp.db")) as db:
             db.execute("UPDATE users SET created_at = '2024-01-15 09:00:00.000000'")
-            db.execute("UPDATE items SET created_at = datetime('2024-03-01', '+' || id || ' days'), "
-                       "updated_at = created_at")
+            db.execute(
+                "UPDATE items SET created_at = datetime('2024-03-01', '+' || id || ' days'), "
+                "updated_at = created_at"
+            )
             db.commit()
         bob = Api(server).login("bob@example.com", "password1")
         yield server, {"admin": admin, "bob": bob}
@@ -61,6 +64,7 @@ def shot(name, viewport=DESKTOP, user="admin", fresh=False):
     def register(scene):
         SHOTS[name] = (viewport, user, fresh, scene)
         return scene
+
     return register
 
 
@@ -74,6 +78,7 @@ def open_settings(page, section, phone=False):
 
 
 # ———— pages ————
+
 
 @shot("login", user=None)
 def _login(page):
@@ -146,6 +151,7 @@ def _form(page):
 
 
 for _section in SECTIONS:
+
     @shot(f"settings-{_section}")
     def _settings(page, section=_section):
         page.goto("/")
@@ -153,6 +159,7 @@ for _section in SECTIONS:
 
 
 # ———— phones ————
+
 
 @shot("phone-login", viewport=PHONE, user=None)
 def _phone_login(page):
@@ -184,6 +191,7 @@ def _phone_settings(page):
 
 
 for _section in SECTIONS:
+
     @shot(f"phone-settings-{_section}", viewport=PHONE)
     def _phone_section(page, section=_section):
         page.goto("/")
@@ -193,6 +201,7 @@ for _section in SECTIONS:
 # ———— between the breakpoints ————
 
 for _prefix, _viewport in (("tablet", TABLET), ("small", SMALL)):
+
     @shot(f"{_prefix}-cards", viewport=_viewport)
     def _mid_cards(page):
         page.goto("/")
@@ -223,8 +232,14 @@ for _prefix, _viewport in (("tablet", TABLET), ("small", SMALL)):
 def test_looks_unchanged(browser, shots_server, fresh_server, name, theme):
     viewport, user, fresh, scene = SHOTS[name]
     server, sessions = (fresh_server, {}) if fresh else shots_server
-    context = browser.new_context(base_url=server.url, viewport=viewport, color_scheme=theme,
-                                  reduced_motion="reduce", locale="en-US", timezone_id="UTC")
+    context = browser.new_context(
+        base_url=server.url,
+        viewport=viewport,
+        color_scheme=theme,
+        reduced_motion="reduce",
+        locale="en-US",
+        timezone_id="UTC",
+    )
     context.set_default_timeout(5000)
     errors = []
     try:
@@ -236,8 +251,9 @@ def test_looks_unchanged(browser, shots_server, fresh_server, name, theme):
         page.wait_for_load_state("networkidle")
         page.evaluate("document.fonts.ready")
         page.mouse.move(0, 0)
-        png = page.screenshot(animations="disabled", caret="hide",
-                              mask=[page.locator(selector) for selector in MASKS])
+        png = page.screenshot(
+            animations="disabled", caret="hide", mask=[page.locator(selector) for selector in MASKS]
+        )
     finally:
         context.close()
     assert not errors, errors

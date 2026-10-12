@@ -1,5 +1,6 @@
 """What guards every request: the session CSRF token, the admin check, and
 the response headers."""
+
 import secrets
 from functools import wraps
 
@@ -40,12 +41,14 @@ def headers(resp):
 def admin_required(view):
     """Signed in (a JSON 401 otherwise) and an admin (403), checked before
     the view looks anything up."""
+
     @wraps(view)
     @login_required
     def guarded(*args, **kwargs):
         if not current_user.is_admin:
             abort(403)
         return view(*args, **kwargs)
+
     return guarded
 
 

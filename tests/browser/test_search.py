@@ -1,4 +1,5 @@
 """The Ctrl/Cmd+K search palette."""
+
 import re
 
 from playwright.sync_api import expect
@@ -47,9 +48,10 @@ def test_results_with_the_match_marked(page, api):
     expect(results).to_have_count(3)
     expect(page.locator(".palette-label")).to_have_text("Records")
     expect(results.locator(".palette-item-title")).to_have_text(
-        ["Done thing with milk", "Milkshake", "Groceries"])
+        ["Done thing with milk", "Milkshake", "Groceries"]
+    )
     expect(results.nth(1).locator("mark")).to_have_text("Milk")
-    expect(results.nth(2).locator("mark")).to_have_count(0)    # matched in the body
+    expect(results.nth(2).locator("mark")).to_have_count(0)  # matched in the body
     expect(results.nth(0)).to_have_class(re.compile(r"\bis-done\b"))
     expect(results.nth(0)).to_have_class(re.compile(r"\bis-active\b"))
     expect(results.nth(0).locator(".palette-item-meta")).to_have_text(re.compile(r"^[A-Z][a-z]{2} \d{1,2}$"))
@@ -102,11 +104,13 @@ def test_a_slow_answer_never_replaces_a_newer_one(page, api):
     api.item("apple")
     api.item("apricot")
     slow = []
+
     def hold_first(route):
         if "q=ap" in route.request.url and not slow:
             slow.append(route)
             return
         route.continue_()
+
     page.route("**/search?*", hold_first)
     page.keyboard.press("Control+k")
     page.locator("#search-input").fill("ap")

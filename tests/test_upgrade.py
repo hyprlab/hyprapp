@@ -5,6 +5,7 @@ every table. Booting the app against a copy must keep every row and run the
 migrations cleanly, twice. tests/snapshots/schema.sql is the schema a fresh
 install gets; a change to it is a change to every install's database.
 """
+
 import shutil
 import sqlite3
 from contextlib import closing
@@ -23,6 +24,7 @@ def boot(data_dir: Path):
     class Upgraded(hyprapp.config.Config):
         TESTING = True
         SQLALCHEMY_DATABASE_URI = f"sqlite:///{data_dir / 'hyprapp.db'}"
+
     return hyprapp.create_app(Upgraded)
 
 
@@ -41,8 +43,9 @@ def rows(db_file: Path, query: str) -> list[tuple]:
 
 
 def schema(db_file: Path) -> str:
-    entries = rows(db_file, "SELECT type, name, sql FROM sqlite_master "
-                            "WHERE sql IS NOT NULL ORDER BY type, name")
+    entries = rows(
+        db_file, "SELECT type, name, sql FROM sqlite_master WHERE sql IS NOT NULL ORDER BY type, name"
+    )
     text = "\n\n".join(f"-- {kind} {name}\n{sql};" for kind, name, sql in entries) + "\n"
     return "\n".join(line.rstrip() for line in text.splitlines()) + "\n"
 
@@ -54,10 +57,12 @@ def columns(db_file: Path) -> dict[str, list[tuple]]:
 
 def test_every_row_survives_two_boots(installed):
     boot(installed)
-    app = boot(installed)    # _migrate() runs at every boot; the second must be a no-op
+    app = boot(installed)  # _migrate() runs at every boot; the second must be a no-op
     db_file = installed / "hyprapp.db"
-    assert rows(db_file, "SELECT id, username, name, is_admin, theme, view_mode, infinite_scroll "
-                         "FROM users ORDER BY id") == [
+    assert rows(
+        db_file,
+        "SELECT id, username, name, is_admin, theme, view_mode, infinite_scroll FROM users ORDER BY id",
+    ) == [
         (1, "admin@example.com", "Ada", 1, "dark", "list", 0),
         (2, "bob@example.com", "Bob", 0, "system", "cards", 1),
     ]
@@ -67,16 +72,21 @@ def test_every_row_survives_two_boots(installed):
         (3, 2, "Bob's record", "", 0, 0),
     ]
     assert dict(rows(db_file, "SELECT key, value FROM settings")) == {
-        "items_per_page": "25", "registration_open": "0", "turnstile_enabled": "0",
-        "turnstile_secret_key": "secret-fixture", "turnstile_site_key": "site-fixture",
+        "items_per_page": "25",
+        "registration_open": "0",
+        "turnstile_enabled": "0",
+        "turnstile_secret_key": "secret-fixture",
+        "turnstile_site_key": "site-fixture",
         "worker_minutes": "30",
     }
 
     client = app.test_client()
     from .conftest import token_for
+
     token = token_for(client)
-    resp = client.post("/login", data={"_csrf": token, "username": "admin@example.com",
-                                       "password": "password1"})
+    resp = client.post(
+        "/login", data={"_csrf": token, "username": "admin@example.com", "password": "password1"}
+    )
     assert resp.status_code == 302
     html = client.get("/?filter=all").data.decode()
     assert 'data-theme-pref="dark"' in html and 'class="grid--list"' in html

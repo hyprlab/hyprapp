@@ -1,5 +1,6 @@
 """The record list: filters, sorts, views, paging, empty states and counts,
 as the server renders them for a page load and for ?partial=1."""
+
 import re
 from datetime import timedelta
 
@@ -22,22 +23,31 @@ def page(client, **params) -> str:
 @pytest.fixture()
 def records(post, admin):
     """One record in each state, created oldest first."""
-    made = {name: make(post, title) for name, title in [
-        ("open", "banana open"), ("pinned", "Apple pinned"), ("done", "cherry done"),
-        ("both", "Date pinned and done")]}
+    made = {
+        name: make(post, title)
+        for name, title in [
+            ("open", "banana open"),
+            ("pinned", "Apple pinned"),
+            ("done", "cherry done"),
+            ("both", "Date pinned and done"),
+        ]
+    }
     post(f"/items/{made['pinned']['id']}", {"pinned": True})
     post(f"/items/{made['done']['id']}", {"done": True})
     post(f"/items/{made['both']['id']}", {"pinned": True, "done": True})
     return made
 
 
-@pytest.mark.parametrize("filter_name, expected", [
-    ("open", ["Apple pinned", "banana open"]),
-    ("all", ["Date pinned and done", "Apple pinned", "cherry done", "banana open"]),
-    ("pinned", ["Date pinned and done", "Apple pinned"]),
-    ("done", ["Date pinned and done", "cherry done"]),
-    ("nonsense", ["Apple pinned", "banana open"]),
-])
+@pytest.mark.parametrize(
+    "filter_name, expected",
+    [
+        ("open", ["Apple pinned", "banana open"]),
+        ("all", ["Date pinned and done", "Apple pinned", "cherry done", "banana open"]),
+        ("pinned", ["Date pinned and done", "Apple pinned"]),
+        ("done", ["Date pinned and done", "cherry done"]),
+        ("nonsense", ["Apple pinned", "banana open"]),
+    ],
+)
 def test_filters(client, records, filter_name, expected):
     assert titles(page(client, filter=filter_name, partial=1)) == expected
 
@@ -46,12 +56,15 @@ def test_no_filter_means_open(client, records):
     assert titles(page(client, partial=1)) == ["Apple pinned", "banana open"]
 
 
-@pytest.mark.parametrize("sort, expected", [
-    ("newest", ["Date pinned and done", "Apple pinned", "cherry done", "banana open"]),
-    ("oldest", ["Apple pinned", "Date pinned and done", "banana open", "cherry done"]),
-    ("title", ["Apple pinned", "Date pinned and done", "banana open", "cherry done"]),
-    ("sideways", ["Date pinned and done", "Apple pinned", "cherry done", "banana open"]),
-])
+@pytest.mark.parametrize(
+    "sort, expected",
+    [
+        ("newest", ["Date pinned and done", "Apple pinned", "cherry done", "banana open"]),
+        ("oldest", ["Apple pinned", "Date pinned and done", "banana open", "cherry done"]),
+        ("title", ["Apple pinned", "Date pinned and done", "banana open", "cherry done"]),
+        ("sideways", ["Date pinned and done", "Apple pinned", "cherry done", "banana open"]),
+    ],
+)
 def test_sorts_keep_pinned_records_first(client, records, sort, expected):
     assert titles(page(client, filter="all", sort=sort, partial=1)) == expected
 
@@ -97,8 +110,10 @@ def test_a_bad_page_number_means_the_first(client, post, admin, value):
 def test_paging(app, client, post, admin):
     with app.app_context():
         owner, start = User.query.one(), utcnow()
-        db.session.add_all(Item(user_id=owner.id, title=f"Item {n:02d}",
-                                created_at=start + timedelta(seconds=n)) for n in range(12))
+        db.session.add_all(
+            Item(user_id=owner.id, title=f"Item {n:02d}", created_at=start + timedelta(seconds=n))
+            for n in range(12)
+        )
         db.session.commit()
     post("/admin/instance", {"items_per_page": 10})
 
@@ -134,12 +149,15 @@ def test_the_page_size_is_the_stored_setting_else_forty(app, client, admin, monk
     assert len(titles(page(client))) == 40
 
 
-@pytest.mark.parametrize("filter_name, heading, onboard", [
-    ("open", "Nothing here yet", True),
-    ("pinned", "Nothing pinned", False),
-    ("done", "Nothing done yet", False),
-    ("all", "Nothing to show", False),
-])
+@pytest.mark.parametrize(
+    "filter_name, heading, onboard",
+    [
+        ("open", "Nothing here yet", True),
+        ("pinned", "Nothing pinned", False),
+        ("done", "Nothing done yet", False),
+        ("all", "Nothing to show", False),
+    ],
+)
 def test_empty_states(client, admin, filter_name, heading, onboard):
     html = page(client, filter=filter_name)
     assert f'<h2 class="empty-title">{heading}</h2>' in html
@@ -181,7 +199,9 @@ def test_sort_and_view_links_keep_the_other_choices(client, records):
     assert 'href="/?filter=done&amp;sort=title&amp;view=list"' in html
     assert 'href="/?view=cards&amp;filter=done&amp;sort=oldest"' in html
     assert '<p class="menupop-head">Sort done</p>' in html
-    assert re.search(r'class="menuopt is-active" role="menuitem"\s+href="/\?filter=done&amp;sort=oldest', html)
+    assert re.search(
+        r'class="menuopt is-active" role="menuitem"\s+href="/\?filter=done&amp;sort=oldest', html
+    )
 
 
 def test_the_records_root_carries_the_view_and_preferences(client, post, admin):

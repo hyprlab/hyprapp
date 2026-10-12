@@ -1,4 +1,5 @@
 """The setup wizard, signing in and out, and registration, in the browser."""
+
 from playwright.sync_api import expect
 
 from .conftest import ADMIN, Api
@@ -35,7 +36,8 @@ def wizard_instance(page):
     page.fill("#wiz-worker", "99999")
     step.get_by_role("button", name="Create the instance").click()
     expect(page.locator("#wiz-error-2")).to_have_text(
-        "The background interval must be between 0 and 1440 minutes.")
+        "The background interval must be between 0 and 1440 minutes."
+    )
     page.fill("#wiz-worker", "0")
     step.get_by_role("button", name="Create the instance").click()
 

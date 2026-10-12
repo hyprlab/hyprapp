@@ -5,6 +5,7 @@ register() turns the refusal into {"error": "..."} with its status, which the
 client shows as written. The sign-up form flashes the same texts instead, so
 the checks return the text rather than raising.
 """
+
 import re
 from typing import NoReturn
 
@@ -12,8 +13,8 @@ from flask import Flask, jsonify, request
 
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 MIN_PASSWORD = 8
-MAX_EMAIL = 80     # users.username is VARCHAR(80)
-MAX_NAME = 120     # users.name is VARCHAR(120)
+MAX_EMAIL = 80  # users.username is VARCHAR(80)
+MAX_NAME = 120  # users.name is VARCHAR(120)
 
 
 class Refused(Exception):

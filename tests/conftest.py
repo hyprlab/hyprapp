@@ -3,6 +3,7 @@
 Every test gets its own temporary data directory and database, so nothing
 touches the developer's var/ and the tests run in any order.
 """
+
 import re
 
 import pytest
@@ -20,6 +21,7 @@ def app(tmp_path, monkeypatch):
     # variables above, for this test only.
     import hyprapp
     import hyprapp.config
+
     monkeypatch.setattr(hyprapp.config, "Config", hyprapp.config.from_environment())
 
     class TestConfig(hyprapp.config.Config):
@@ -54,18 +56,27 @@ def csrf(client):
 @pytest.fixture()
 def post(client, csrf):
     """POST a JSON body with the session's CSRF header, the way app.js does."""
+
     def send(url, body=None):
         return client.post(url, json=body if body is not None else {}, headers={"X-CSRF": csrf})
+
     return send
 
 
 @pytest.fixture()
 def admin(client, csrf):
     """A signed-in admin, created through the setup wizard."""
-    resp = client.post("/setup", json={
-        "username": "admin@example.com", "password": "password1",
-        "name": "Ada", "registration_open": True, "worker_minutes": 0,
-    }, headers={"X-CSRF": csrf})
+    resp = client.post(
+        "/setup",
+        json={
+            "username": "admin@example.com",
+            "password": "password1",
+            "name": "Ada",
+            "registration_open": True,
+            "worker_minutes": 0,
+        },
+        headers={"X-CSRF": csrf},
+    )
     assert resp.status_code == 200
     return {"username": "admin@example.com", "password": "password1"}
 
@@ -75,9 +86,14 @@ def second_user(app, admin):
     """A second, non-admin account, signed in on its own client."""
     other = app.test_client()
     token = token_for(other)
-    resp = other.post("/register", data={
-        "_csrf": token, "username": "other@example.com",
-        "password": "password1", "confirm": "password1",
-    })
+    resp = other.post(
+        "/register",
+        data={
+            "_csrf": token,
+            "username": "other@example.com",
+            "password": "password1",
+            "confirm": "password1",
+        },
+    )
     assert resp.status_code == 302
     return other, token

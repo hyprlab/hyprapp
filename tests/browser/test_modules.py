@@ -1,4 +1,5 @@
 """In a real page load, every script arrives versioned, once."""
+
 import re
 
 from playwright.sync_api import expect

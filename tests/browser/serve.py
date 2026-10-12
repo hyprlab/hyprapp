@@ -7,6 +7,7 @@ network.
 The answer is made at the transport, under requests, so it holds however the
 app calls requests. GOOD_TOKEN passes with any secret but "wrong-secret".
 """
+
 import json
 import sys
 from urllib.parse import parse_qsl
@@ -43,9 +44,22 @@ def send(self, request, **kwargs):
 def main(port: str) -> None:
     HTTPAdapter.send = send
     from gunicorn.app.wsgiapp import run
+
     # The Dockerfile's arguments: one worker, eight threads.
-    sys.argv = ["gunicorn", "--workers", "1", "--threads", "8", "--timeout", "90",
-                "--bind", f"127.0.0.1:{port}", "--log-level", "warning", "hyprapp:create_app()"]
+    sys.argv = [
+        "gunicorn",
+        "--workers",
+        "1",
+        "--threads",
+        "8",
+        "--timeout",
+        "90",
+        "--bind",
+        f"127.0.0.1:{port}",
+        "--log-level",
+        "warning",
+        "hyprapp:create_app()",
+    ]
     run()
 
 

@@ -1,4 +1,5 @@
 """Sign in, sign up, sign out, the sign-in throttle and the proxy setting."""
+
 import time
 
 import pytest
@@ -20,11 +21,14 @@ def stranger(app, admin):
 
 
 def login(client, token, username="admin@example.com", password="password1", **extra):
-    return client.post("/login" + extra.pop("query", ""),
-                       data={"_csrf": token, "username": username, "password": password, **extra})
+    return client.post(
+        "/login" + extra.pop("query", ""),
+        data={"_csrf": token, "username": username, "password": password, **extra},
+    )
 
 
 # ———— sign in ————
+
 
 def test_the_sign_in_page(stranger):
     client, _ = stranger
@@ -61,9 +65,14 @@ def test_sign_in_returns_to_the_page_asked_for(stranger):
     assert resp.headers["Location"] == "/?filter=done"
 
 
-@pytest.mark.parametrize("username, password", [
-    ("admin@example.com", "wrong-password"), ("nobody@example.com", "password1"), ("", ""),
-])
+@pytest.mark.parametrize(
+    "username, password",
+    [
+        ("admin@example.com", "wrong-password"),
+        ("nobody@example.com", "password1"),
+        ("", ""),
+    ],
+)
 def test_a_failed_sign_in(stranger, username, password):
     client, token = stranger
     resp = login(client, token, username=username, password=password)
@@ -79,6 +88,7 @@ def test_a_signed_in_visit_to_sign_in_or_up_goes_home(client, admin):
 
 
 # ———— the throttle ————
+
 
 def test_eight_failures_lock_the_pair_even_with_the_right_password(stranger):
     client, token = stranger
@@ -118,8 +128,11 @@ def test_the_lock_lifts_after_fifteen_minutes(stranger, monkeypatch):
 def test_without_trust_proxy_forwarded_addresses_are_ignored(stranger):
     client, token = stranger
     for n in range(8):
-        client.post("/login", data={"_csrf": token, "username": "admin@example.com",
-                                    "password": "nope"}, headers={"X-Forwarded-For": f"10.0.0.{n}"})
+        client.post(
+            "/login",
+            data={"_csrf": token, "username": "admin@example.com", "password": "nope"},
+            headers={"X-Forwarded-For": f"10.0.0.{n}"},
+        )
     assert login(client, token).status_code == 429
 
 
@@ -127,22 +140,35 @@ def test_with_trust_proxy_each_forwarded_address_counts_alone(app, admin):
     class Proxied(hyprapp.config.Config):
         TESTING = True
         TRUST_PROXY = 1
+
     proxied = hyprapp.create_app(Proxied)
     client = proxied.test_client()
     token = token_for(client)
     for _ in range(8):
-        client.post("/login", data={"_csrf": token, "username": "admin@example.com",
-                                    "password": "nope"}, headers={"X-Forwarded-For": "10.0.0.1"})
-    resp = client.post("/login", data={"_csrf": token, "username": "admin@example.com",
-                                       "password": "password1"}, headers={"X-Forwarded-For": "10.0.0.2"})
+        client.post(
+            "/login",
+            data={"_csrf": token, "username": "admin@example.com", "password": "nope"},
+            headers={"X-Forwarded-For": "10.0.0.1"},
+        )
+    resp = client.post(
+        "/login",
+        data={"_csrf": token, "username": "admin@example.com", "password": "password1"},
+        headers={"X-Forwarded-For": "10.0.0.2"},
+    )
     assert resp.status_code == 302
 
 
 # ———— sign up ————
 
+
 def register(client, token, **fields):
-    data = {"_csrf": token, "username": "new@example.com", "password": "password1",
-            "confirm": "password1", **fields}
+    data = {
+        "_csrf": token,
+        "username": "new@example.com",
+        "password": "password1",
+        "confirm": "password1",
+        **fields,
+    }
     return client.post("/register", data=data)
 
 
@@ -153,13 +179,16 @@ def test_the_sign_up_page(stranger):
     assert 'name="confirm" type="password" required minlength="8"' in html
 
 
-@pytest.mark.parametrize("fields, error", [
-    ({"username": "not-an-email"}, "Enter a valid email address."),
-    ({"username": "x" * 75 + "@e.com"}, "Enter a valid email address."),
-    ({"password": "short", "confirm": "short"}, "Passwords need at least 8 characters."),
-    ({"confirm": "password2"}, "Passwords don&#39;t match."),
-    ({"username": "ADMIN@example.com"}, "An account with that email already exists."),
-])
+@pytest.mark.parametrize(
+    "fields, error",
+    [
+        ({"username": "not-an-email"}, "Enter a valid email address."),
+        ({"username": "x" * 75 + "@e.com"}, "Enter a valid email address."),
+        ({"password": "short", "confirm": "short"}, "Passwords need at least 8 characters."),
+        ({"confirm": "password2"}, "Passwords don&#39;t match."),
+        ({"username": "ADMIN@example.com"}, "An account with that email already exists."),
+    ],
+)
 def test_sign_up_refusals(stranger, fields, error):
     client, token = stranger
     resp = register(client, token, name="Keep me", **fields)
@@ -189,6 +218,7 @@ def test_a_closed_sign_up_goes_back_to_sign_in(stranger, post):
 
 
 # ———— sign out ————
+
 
 def test_signing_out(client, csrf, admin):
     resp = client.post("/logout", data={"_csrf": csrf})

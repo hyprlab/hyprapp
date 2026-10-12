@@ -3,6 +3,7 @@
 color and cost no request; drawn here rather than by a Jinja macro because
 a page draws dozens and a macro call costs far more than a lookup.
 """
+
 from markupsafe import Markup, escape
 
 PATHS = {

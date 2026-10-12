@@ -1,4 +1,5 @@
 """Pull to refresh, on a touch device."""
+
 import re
 
 from playwright.sync_api import expect
@@ -14,6 +15,7 @@ def touch_page(new_page, api):
     def touch(kind, y=0):
         points = [] if kind == "touchEnd" else [{"x": 195, "y": y}]
         cdp.send("Input.dispatchTouchEvent", {"type": kind, "touchPoints": points})
+
     return page, touch
 
 

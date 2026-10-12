@@ -1,5 +1,6 @@
 """The admin routes: instance settings, registration, and user management.
 Turnstile has its own file."""
+
 import pytest
 
 from hyprapp.models import Item, User, get_setting
@@ -20,35 +21,44 @@ def user(app, username) -> User | None:
 def signs_in(app, username, password) -> bool:
     other = app.test_client()
     token = token_for(other)
-    return other.post("/login", data={"_csrf": token, "username": username,
-                                      "password": password}).status_code == 302
+    return (
+        other.post("/login", data={"_csrf": token, "username": username, "password": password}).status_code
+        == 302
+    )
 
 
 # ———— instance ————
 
-@pytest.mark.parametrize("body, error", [
-    ({"worker_minutes": "x"}, "The background interval must be a number."),
-    ({"worker_minutes": None}, "The background interval must be a number."),
-    ({"worker_minutes": [1]}, "The background interval must be a number."),
-    ({"worker_minutes": -1}, "The background interval must be between 0 and 1440."),
-    ({"worker_minutes": 1441}, "The background interval must be between 0 and 1440."),
-    ({"items_per_page": "abc"}, "The page size must be a number."),
-    ({"items_per_page": 9}, "The page size must be between 10 and 500."),
-    ({"items_per_page": 501}, "The page size must be between 10 and 500."),
-])
+
+@pytest.mark.parametrize(
+    "body, error",
+    [
+        ({"worker_minutes": "x"}, "The background interval must be a number."),
+        ({"worker_minutes": None}, "The background interval must be a number."),
+        ({"worker_minutes": [1]}, "The background interval must be a number."),
+        ({"worker_minutes": -1}, "The background interval must be between 0 and 1440."),
+        ({"worker_minutes": 1441}, "The background interval must be between 0 and 1440."),
+        ({"items_per_page": "abc"}, "The page size must be a number."),
+        ({"items_per_page": 9}, "The page size must be between 10 and 500."),
+        ({"items_per_page": 501}, "The page size must be between 10 and 500."),
+    ],
+)
 def test_instance_settings_are_checked(app, post, admin, body, error):
     resp = post("/admin/instance", body)
     assert resp.status_code == 400 and resp.get_json() == {"error": error}
 
 
-@pytest.mark.parametrize("body, key, stored", [
-    ({"worker_minutes": 0}, "worker_minutes", "0"),
-    ({"worker_minutes": 1440}, "worker_minutes", "1440"),
-    ({"worker_minutes": "30"}, "worker_minutes", "30"),
-    ({"items_per_page": 10}, "items_per_page", "10"),
-    ({"items_per_page": 500}, "items_per_page", "500"),
-    ({"items_per_page": 20.7}, "items_per_page", "20"),
-])
+@pytest.mark.parametrize(
+    "body, key, stored",
+    [
+        ({"worker_minutes": 0}, "worker_minutes", "0"),
+        ({"worker_minutes": 1440}, "worker_minutes", "1440"),
+        ({"worker_minutes": "30"}, "worker_minutes", "30"),
+        ({"items_per_page": 10}, "items_per_page", "10"),
+        ({"items_per_page": 500}, "items_per_page", "500"),
+        ({"items_per_page": 20.7}, "items_per_page", "20"),
+    ],
+)
 def test_instance_settings_are_saved(app, post, admin, body, key, stored):
     assert post("/admin/instance", body).get_json() == {"ok": True}
     assert setting(app, key) == stored
@@ -81,9 +91,16 @@ def test_the_admin_section_defaults(client, admin):
 
 # ———— registration ————
 
-@pytest.mark.parametrize("body, is_open", [
-    ({"open": True}, True), ({"open": False}, False), ({}, False), ({"open": "yes"}, True),
-])
+
+@pytest.mark.parametrize(
+    "body, is_open",
+    [
+        ({"open": True}, True),
+        ({"open": False}, False),
+        ({}, False),
+        ({"open": "yes"}, True),
+    ],
+)
 def test_registration(app, client, post, admin, body, is_open):
     assert post("/admin/registration", body).get_json() == {"ok": True, "open": is_open}
     assert setting(app, "registration_open") == ("1" if is_open else "0")
@@ -94,6 +111,7 @@ def test_registration_falls_back_to_the_environment(app, client, csrf, admin):
     """The wizard stores a choice, which wins; with nothing stored,
     ALLOW_REGISTRATION decides."""
     from hyprapp.models import Setting, db
+
     client.post("/logout", headers={"X-CSRF": csrf})
     with app.app_context():
         db.session.delete(db.session.get(Setting, "registration_open"))
@@ -107,6 +125,7 @@ def test_registration_falls_back_to_the_environment(app, client, csrf, admin):
 
 
 # ———— users ————
+
 
 @pytest.mark.parametrize("username", ["", "nope", "a@b", "a b@c.de", "x" * 75 + "@e.com", None])
 def test_new_users_need_an_email(post, admin, username):
@@ -133,8 +152,10 @@ def test_emails_are_unique_whatever_the_case(post, admin):
 
 
 def test_creating_a_user(app, post, admin):
-    resp = post("/admin/users", {"username": "  New@Example.COM ", "password": "password1",
-                                 "name": "  " + "n" * 130, "is_admin": 1})
+    resp = post(
+        "/admin/users",
+        {"username": "  New@Example.COM ", "password": "password1", "name": "  " + "n" * 130, "is_admin": 1},
+    )
     body = resp.get_json()
     assert resp.status_code == 200 and body["ok"] is True
     created = user(app, "new@example.com")
@@ -161,6 +182,7 @@ def test_the_user_list(client, post, second_user):
 
 # ———— reset a password ————
 
+
 def test_resetting_a_password(app, post, second_user):
     other, token = second_user
     assert post("/admin/users/2/password", {"new": "password9"}).get_json() == {"ok": True}
@@ -183,6 +205,7 @@ def test_resetting_your_own_password_here_signs_you_out(client, post, admin):
 
 
 # ———— admin flag and deletion ————
+
 
 def test_toggling_admin(app, post, second_user):
     assert post("/admin/users/2/toggle-admin").get_json() == {"ok": True, "is_admin": True}
@@ -212,7 +235,8 @@ def test_deleting_a_user(app, post, second_user):
     assert other.get("/", headers={"Accept": "text/html"}).status_code == 302
 
 
-@pytest.mark.parametrize("url", ["/admin/users/99/password", "/admin/users/99/toggle-admin",
-                                 "/admin/users/99/delete"])
+@pytest.mark.parametrize(
+    "url", ["/admin/users/99/password", "/admin/users/99/toggle-admin", "/admin/users/99/delete"]
+)
 def test_a_missing_user_is_404(post, admin, url):
     assert post(url, {"new": "password1"}).status_code == 404

@@ -4,6 +4,7 @@ Schema changes go through ``_migrate()`` in ``__init__.py``: ``ALTER TABLE``
 guarded by a column check, no migration framework. SQLite in one volume is the
 whole storage story (see docs/ARCHITECTURE.md).
 """
+
 import hashlib
 from datetime import datetime, timezone
 
@@ -35,14 +36,12 @@ class User(UserMixin, db.Model):
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
     # Preferences live on the account, not in localStorage, so they follow the
     # user to another browser.
-    theme = db.Column(db.String(10), default="system", nullable=False)     # system|light|dark
+    theme = db.Column(db.String(10), default="system", nullable=False)  # system|light|dark
     view_mode = db.Column(db.String(10), default="cards", nullable=False)  # cards|list
     infinite_scroll = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(db.DateTime, default=utcnow, nullable=False)
 
-    items = db.relationship(
-        "Item", backref="owner", cascade="all, delete-orphan", lazy="dynamic"
-    )
+    items = db.relationship("Item", backref="owner", cascade="all, delete-orphan", lazy="dynamic")
 
     @classmethod
     def find(cls, username: str) -> "User | None":
@@ -50,8 +49,7 @@ class User(UserMixin, db.Model):
         return cls.query.filter(func.lower(cls.username) == username.strip().lower()).first()
 
     @classmethod
-    def create(cls, username: str, password: str, name: str | None = None,
-               is_admin: bool = False) -> "User":
+    def create(cls, username: str, password: str, name: str | None = None, is_admin: bool = False) -> "User":
         user = cls(username=username, name=name, is_admin=is_admin)
         user.set_password(password)
         db.session.add(user)
@@ -85,6 +83,7 @@ class Setting(db.Model):
     A stored value always wins over the matching environment variable, which
     is only the fresh-install default.
     """
+
     __tablename__ = "settings"
 
     key = db.Column(db.String(50), primary_key=True)
@@ -123,12 +122,12 @@ class Item(db.Model):
     whatever the app is about, or replace it and keep the machinery around it
     (docs/TEMPLATE.md).
     """
+
     __tablename__ = "items"
     __table_args__ = (db.Index("ix_items_user_created", "user_id", "created_at"),)
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"),
-                        nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     title = db.Column(db.String(300), nullable=False)
     body = db.Column(db.Text, default="", nullable=False)
     pinned = db.Column(db.Boolean, default=False, nullable=False)

@@ -1,5 +1,6 @@
 """The worked example in the browser: views, sort, filters, counts, the one
 form and the optimistic pin. The detail sheet is test_sheet.py."""
+
 import json
 import re
 
@@ -141,15 +142,19 @@ def test_the_pin_answers_at_once_and_is_saved(page, api):
         expect(pin).to_have_class(re.compile(r"\bis-pinned\b"))
     assert answer.value.ok
     expect(pin).to_have_attribute("aria-label", "Unpin")
-    expect(page.locator("#sheet")).to_be_hidden()    # the click didn't open the record
+    expect(page.locator("#sheet")).to_be_hidden()  # the click didn't open the record
     assert api.get(f"/items/{item['id']}")["item"]["pinned"] is True
 
 
 def test_the_pin_rolls_back_when_the_server_refuses(page, api):
     item = api.item("Stubborn")
     page.reload()
-    page.route(f"**/items/{item['id']}", lambda route: route.fulfill(
-        status=400, content_type="application/json", body=json.dumps({"error": "No pinning today."})))
+    page.route(
+        f"**/items/{item['id']}",
+        lambda route: route.fulfill(
+            status=400, content_type="application/json", body=json.dumps({"error": "No pinning today."})
+        ),
+    )
     pin = card(page, "Stubborn").locator(".pinbtn")
     pin.click()
     expect(page.locator("#toast")).to_have_text("No pinning today.")

@@ -5,6 +5,7 @@ truth; this module parses it into version entries and renders their bodies
 to HTML. Editing the Markdown is the only step needed to update the About
 section. Parsing is cached by file mtime, so dev edits appear without a restart.
 """
+
 import re
 from dataclasses import dataclass
 from datetime import datetime
@@ -27,8 +28,8 @@ _LINK_REF = re.compile(r"^\[[^\]]+\]:\s+\S+\s*$", re.M)
 @dataclass
 class Entry:
     version: str
-    date_label: str   # "Aug 7, 2026" — "" when the header has no date
-    title: str        # optional short headline after the date
+    date_label: str  # "Aug 7, 2026" — "" when the header has no date
+    title: str  # optional short headline after the date
     is_latest: bool
     body_html: str
 
@@ -59,13 +60,15 @@ def _parse(path: Path) -> list[Entry]:
         if current is None:
             return
         raw = _LINK_REF.sub("", "\n".join(body)).strip()
-        entries.append(Entry(
-            version=current["version"],
-            date_label=current["date_label"],
-            title=current["title"],
-            is_latest=current["latest"],
-            body_html=md_lib.markdown(raw, extensions=_MD_EXT),
-        ))
+        entries.append(
+            Entry(
+                version=current["version"],
+                date_label=current["date_label"],
+                title=current["title"],
+                is_latest=current["latest"],
+                body_html=md_lib.markdown(raw, extensions=_MD_EXT),
+            )
+        )
 
     for line in path.read_text(encoding="utf-8").splitlines():
         m = _HEADER.match(line)

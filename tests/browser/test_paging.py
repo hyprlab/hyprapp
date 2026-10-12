@@ -1,4 +1,5 @@
 """Paging: Load more by hand, or infinite scroll, both through ?partial=1."""
+
 import re
 from urllib.parse import parse_qs, urlparse
 

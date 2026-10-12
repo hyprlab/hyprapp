@@ -1,4 +1,5 @@
 """Instance settings, registration and user management, for admins only."""
+
 from flask import Blueprint, jsonify
 from flask_login import current_user
 from sqlalchemy import func
@@ -6,8 +7,16 @@ from sqlalchemy import func
 from . import turnstile
 from .models import Item, User, db, int_setting, set_setting
 from .security import admin_required
-from .validation import (bounded_int, check, clean_email, clean_name, email_problem, json_body,
-                         password_problem, refuse)
+from .validation import (
+    bounded_int,
+    check,
+    clean_email,
+    clean_name,
+    email_problem,
+    json_body,
+    password_problem,
+    refuse,
+)
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -64,8 +73,9 @@ def create_user():
     check(password_problem(password))
     if User.find(username):
         refuse("An account with that email already exists.", 409)
-    user = User.create(username, password, name=clean_name(data.get("name")),
-                       is_admin=bool(data.get("is_admin")))
+    user = User.create(
+        username, password, name=clean_name(data.get("name")), is_admin=bool(data.get("is_admin"))
+    )
     return jsonify(ok=True, id=user.id)
 
 
@@ -97,6 +107,6 @@ def delete_user(user_id):
     user = db.get_or_404(User, user_id)
     if user.id == current_user.id:
         refuse("You can't delete your own account from here.")
-    db.session.delete(user)   # their records cascade through the relationship
+    db.session.delete(user)  # their records cascade through the relationship
     db.session.commit()
     return jsonify(ok=True)

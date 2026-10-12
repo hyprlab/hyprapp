@@ -1,4 +1,5 @@
 """Toasts: confirmations, errors, and where they appear."""
+
 import json
 import re
 
@@ -25,17 +26,26 @@ def test_a_toast_raised_in_a_dialog_shows_inside_it(page):
 def test_a_toast_outside_dialogs_lives_in_the_body(page, api):
     item = api.item("Pinnable")
     page.reload()
-    page.route(f"**/items/{item['id']}", lambda route: route.fulfill(
-        status=400, content_type="application/json", body=json.dumps({"error": "Refused."})))
+    page.route(
+        f"**/items/{item['id']}",
+        lambda route: route.fulfill(
+            status=400, content_type="application/json", body=json.dumps({"error": "Refused."})
+        ),
+    )
     page.locator(".pinbtn").click()
     expect(page.locator("#toast")).to_be_visible()
     assert page.evaluate("document.getElementById('toast').parentNode.tagName") == "BODY"
 
 
 def test_an_error_is_red_and_says_what_happened(page):
-    page.route("**/settings", lambda route: route.fulfill(
-        status=500, content_type="application/json",
-        body=json.dumps({"error": "Something went wrong on the server."})))
+    page.route(
+        "**/settings",
+        lambda route: route.fulfill(
+            status=500,
+            content_type="application/json",
+            body=json.dumps({"error": "Something went wrong on the server."}),
+        ),
+    )
     page.get_by_role("button", name="Settings").click()
     page.locator(".seg").get_by_text("List").click()
     toast = page.locator("#toast")

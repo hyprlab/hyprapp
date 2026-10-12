@@ -20,8 +20,9 @@ def test_health_answers_before_setup(client):
 
 def test_setup_runs_once(client, csrf, admin):
     assert client.get("/").status_code == 200
-    again = client.post("/setup", json={"username": "x@example.com", "password": "password1"},
-                        headers={"X-CSRF": csrf})
+    again = client.post(
+        "/setup", json={"username": "x@example.com", "password": "password1"}, headers={"X-CSRF": csrf}
+    )
     assert again.status_code == 409
 
 
@@ -33,10 +34,14 @@ def test_post_without_csrf_is_refused(client, csrf, admin):
 
 def test_item_round_trip(client, csrf, admin):
     h = {"X-CSRF": csrf}
-    item = client.post("/items", json={"title": "Write it down", "body": "Later."}, headers=h).get_json()["item"]
+    item = client.post("/items", json={"title": "Write it down", "body": "Later."}, headers=h).get_json()[
+        "item"
+    ]
     assert client.get(f"/items/{item['id']}").get_json()["item"]["title"] == "Write it down"
 
-    updated = client.post(f"/items/{item['id']}", json={"pinned": True, "done": True}, headers=h).get_json()["item"]
+    updated = client.post(f"/items/{item['id']}", json={"pinned": True, "done": True}, headers=h).get_json()[
+        "item"
+    ]
     assert updated["pinned"] and updated["done"]
 
     deleted = client.post(f"/items/{item['id']}/delete", headers=h).get_json()
@@ -56,8 +61,10 @@ def test_records_belong_to_their_owner(client, csrf, admin, second_user):
     mine = client.post("/items", json={"title": "Private"}, headers={"X-CSRF": csrf}).get_json()["item"]
     other, token = second_user
     assert other.get(f"/items/{mine['id']}", headers={"X-CSRF": token}).status_code == 404
-    assert other.post(f"/items/{mine['id']}", json={"title": "Stolen"},
-                      headers={"X-CSRF": token}).status_code == 404
+    assert (
+        other.post(f"/items/{mine['id']}", json={"title": "Stolen"}, headers={"X-CSRF": token}).status_code
+        == 404
+    )
     assert other.get("/search?q=priv").get_json()["results"] == []
 
 
@@ -87,14 +94,19 @@ def test_listing_filters_sorts_and_pages(client, csrf, app, admin):
 
 def test_admin_routes_refuse_a_plain_account(second_user):
     other, token = second_user
-    assert other.post("/admin/registration", json={"open": False},
-                      headers={"X-CSRF": token}).status_code == 403
+    assert (
+        other.post("/admin/registration", json={"open": False}, headers={"X-CSRF": token}).status_code == 403
+    )
 
 
 def test_admin_cannot_delete_or_demote_itself(client, csrf, admin):
     h = {"X-CSRF": csrf}
-    assert client.post("/admin/users", json={"username": "b@example.com", "password": "password1"},
-                       headers=h).status_code == 200
+    assert (
+        client.post(
+            "/admin/users", json={"username": "b@example.com", "password": "password1"}, headers=h
+        ).status_code
+        == 200
+    )
     assert client.post("/admin/users/1/delete", headers=h).status_code == 400
     assert client.post("/admin/users/1/toggle-admin", headers=h).status_code == 400
 
@@ -104,6 +116,7 @@ def test_deleting_a_user_deletes_their_records(client, csrf, admin, second_user)
     other.post("/items", json={"title": "Theirs"}, headers={"X-CSRF": token})
     assert client.post("/admin/users/2/delete", headers={"X-CSRF": csrf}).status_code == 200
     from hyprapp.models import Item
+
     with client.application.app_context():
         assert Item.query.count() == 0
 
@@ -125,9 +138,14 @@ def test_registration_can_be_closed(client, csrf, admin, app):
 def test_login_next_cannot_leave_the_site(client, csrf, admin):
     client.post("/logout", headers={"X-CSRF": csrf})
     for bad in ("https://example.net/", "//example.net/", "/\\example.net"):
-        resp = client.post(f"/login?next={bad}", data={
-            "_csrf": csrf, "username": admin["username"], "password": admin["password"],
-        })
+        resp = client.post(
+            f"/login?next={bad}",
+            data={
+                "_csrf": csrf,
+                "username": admin["username"],
+                "password": admin["password"],
+            },
+        )
         assert resp.headers["Location"] in ("/", "http://localhost/"), bad
         client.post("/logout", headers={"X-CSRF": csrf})
 
@@ -161,6 +179,7 @@ def test_security_headers(client):
 
 def test_changelog_renders_in_the_about_tab(client, csrf, admin):
     from hyprapp import __version__
+
     body = client.get("/").data.decode()
     assert "Changelog" in body and __version__ in body
 

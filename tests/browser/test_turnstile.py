@@ -1,5 +1,6 @@
 """Turnstile, set up in Settings > Security, with Cloudflare stubbed: the
 widget script by fake_turnstile.js, siteverify by serve.py."""
+
 import re
 
 import pytest
@@ -34,7 +35,7 @@ def test_turning_it_on_and_off(page):
     expect(page.locator("#ts-chip")).to_have_text("Off")
     expect(page.locator("#ts-status-text")).to_have_text("Sign-in and sign-up have no challenge.")
     expect(page.locator("#ts-off")).to_be_hidden()
-    assert requested == []      # nothing is loaded until it is needed
+    assert requested == []  # nothing is loaded until it is needed
     turn_on(page)
     expect(page.locator("#toast")).to_have_text("Turnstile is on")
     assert any("render=explicit" in url for url in requested)
@@ -45,7 +46,9 @@ def test_turning_it_on_and_off(page):
     expect(page.locator("#ts-status-text")).to_have_text("Sign-in and sign-up show a challenge.")
     expect(page.locator("#ts-verify .btn-label")).to_have_text("Verify and save the keys")
     expect(page.locator("#ts-secret")).to_have_value("")
-    expect(page.locator("#ts-secret")).to_have_attribute("placeholder", "Saved, ends in wxyz. Leave empty to keep it.")
+    expect(page.locator("#ts-secret")).to_have_attribute(
+        "placeholder", "Saved, ends in wxyz. Leave empty to keep it."
+    )
     expect(page.locator("#ts-challenge")).to_be_hidden()
     expect(page.locator("#ts-off")).to_be_visible()
 
@@ -91,7 +94,8 @@ def test_the_widget_s_own_errors_in_words(page, server):
     page.evaluate("window.__turnstileMode = 'error:110200'")
     turn_on(page)
     expect(page.locator("#ts-error")).to_have_text(
-        "This address isn't in the widget's hostname list. Add 127.0.0.1 to it in the Cloudflare dashboard.")
+        "This address isn't in the widget's hostname list. Add 127.0.0.1 to it in the Cloudflare dashboard."
+    )
     for code, message in [
         ("110100", "Cloudflare doesn't recognize that site key."),
         ("300010", "The challenge failed in this browser (error 300010). Try again."),
@@ -113,7 +117,8 @@ def test_cloudflare_out_of_reach(page):
     security(page)
     turn_on(page)
     expect(page.locator("#ts-error")).to_have_text(
-        "Couldn't load Cloudflare's challenge. Check the server's connection.")
+        "Couldn't load Cloudflare's challenge. Check the server's connection."
+    )
     expect(page.locator("#ts-verify")).to_be_enabled()
 
 

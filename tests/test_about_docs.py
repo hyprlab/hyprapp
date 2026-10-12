@@ -1,4 +1,5 @@
 """The changelog parser behind the About section."""
+
 import os
 import textwrap
 
@@ -59,7 +60,7 @@ def test_bodies_are_rendered_markdown(changelog):
     assert '<a href="https://example.com">the docs</a>' in first.body_html
     assert second.body_html == "<p>Plain paragraph.</p>"
     assert third.body_html == "<ul>\n<li>First</li>\n</ul>"
-    assert fourth.body_html == ""     # link references are dropped
+    assert fourth.body_html == ""  # link references are dropped
 
 
 def test_the_first_entry_is_latest_unless_one_says_so(changelog):
@@ -84,4 +85,5 @@ def test_no_changelog_means_no_entries(tmp_path, monkeypatch):
 def test_the_real_changelog_parses():
     entries = about_docs.changelog()
     from hyprapp import __version__
+
     assert entries and entries[0].version == __version__ and entries[0].is_latest

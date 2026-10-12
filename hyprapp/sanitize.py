@@ -5,27 +5,64 @@ template renders it with ``|safe``. Tags outside ``ALLOWED`` are dropped,
 attributes are cut down to the listed ones, and script-bearing containers go
 with their contents.
 """
+
 import re
 from html import escape
 from html.parser import HTMLParser
 
 ALLOWED = {
-    "p": (), "br": (), "hr": (),
+    "p": (),
+    "br": (),
+    "hr": (),
     "a": ("href",),
-    "strong": (), "b": (), "em": (), "i": (), "u": (), "s": (), "mark": (), "small": (),
-    "blockquote": (), "q": (),
-    "ul": (), "ol": (), "li": (),
-    "h1": (), "h2": (), "h3": (), "h4": (), "h5": (), "h6": (),
-    "pre": (), "code": (),
+    "strong": (),
+    "b": (),
+    "em": (),
+    "i": (),
+    "u": (),
+    "s": (),
+    "mark": (),
+    "small": (),
+    "blockquote": (),
+    "q": (),
+    "ul": (),
+    "ol": (),
+    "li": (),
+    "h1": (),
+    "h2": (),
+    "h3": (),
+    "h4": (),
+    "h5": (),
+    "h6": (),
+    "pre": (),
+    "code": (),
     "img": ("src", "alt", "title"),
-    "figure": (), "figcaption": (),
-    "table": (), "thead": (), "tbody": (), "tr": (), "th": (), "td": (),
-    "sup": (), "sub": (),
+    "figure": (),
+    "figcaption": (),
+    "table": (),
+    "thead": (),
+    "tbody": (),
+    "tr": (),
+    "th": (),
+    "td": (),
+    "sup": (),
+    "sub": (),
 }
 VOID = {"br", "hr", "img"}
 # Headings in article bodies get demoted so they sit under the reader's own title.
 DEMOTE = {"h1": "h3", "h2": "h3", "h5": "h4", "h6": "h4"}
-DROP_WITH_CONTENT = {"script", "style", "iframe", "object", "embed", "form", "svg", "video", "audio", "noscript"}
+DROP_WITH_CONTENT = {
+    "script",
+    "style",
+    "iframe",
+    "object",
+    "embed",
+    "form",
+    "svg",
+    "video",
+    "audio",
+    "noscript",
+}
 
 _SAFE_URL = re.compile(r"^(https?:)?//|^https?:|^/|^#|^mailto:", re.I)
 
@@ -88,11 +125,37 @@ def sanitize_html(html: str) -> str:
 # Only block-level tags separate words; inline tags must not, or stylised markup
 # such as The Atlantic's drop caps (<p>W<span>hen ...</span>) turns into "W hen".
 BLOCK = {
-    "p", "br", "hr", "div", "section", "article", "header", "footer", "aside",
-    "ul", "ol", "li", "dl", "dt", "dd",
-    "h1", "h2", "h3", "h4", "h5", "h6",
-    "blockquote", "pre", "figure", "figcaption",
-    "table", "thead", "tbody", "tr", "th", "td",
+    "p",
+    "br",
+    "hr",
+    "div",
+    "section",
+    "article",
+    "header",
+    "footer",
+    "aside",
+    "ul",
+    "ol",
+    "li",
+    "dl",
+    "dt",
+    "dd",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "blockquote",
+    "pre",
+    "figure",
+    "figcaption",
+    "table",
+    "thead",
+    "tbody",
+    "tr",
+    "th",
+    "td",
 }
 
 

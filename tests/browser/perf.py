@@ -9,6 +9,7 @@ Starts the app as the browser tests do, with 300 records, and records:
   * server response times for /, /search and a ?partial=1 page (median, p90)
   * with --image, the size of the Docker image built from the working tree
 """
+
 import json
 import statistics
 import subprocess
@@ -62,9 +63,14 @@ def first_loads(browser, server, api) -> dict:
         samples.append(timing)
         context.close()
     median = lambda key: round(statistics.median(s[key] for s in samples), 1)
-    return {"requests": samples[0]["requests"], "bytes": samples[0]["bytes"], "files": samples[0]["urls"],
-            "dom_content_loaded_ms": median("dcl"), "load_ms": median("load"),
-            "first_use_ms": median("first_use")}
+    return {
+        "requests": samples[0]["requests"],
+        "bytes": samples[0]["bytes"],
+        "files": samples[0]["urls"],
+        "dom_content_loaded_ms": median("dcl"),
+        "load_ms": median("load"),
+        "first_use_ms": median("first_use"),
+    }
 
 
 def server_times(api) -> dict:
@@ -81,28 +87,35 @@ def server_times(api) -> dict:
             times.append((time.perf_counter() - started) * 1000)
             assert resp.ok, (path, resp.status_code)
         times.sort()
-        out[name] = {"median_ms": round(statistics.median(times), 2),
-                     "p90_ms": round(times[int(len(times) * 0.9)], 2), "bytes": len(resp.content)}
+        out[name] = {
+            "median_ms": round(statistics.median(times), 2),
+            "p90_ms": round(times[int(len(times) * 0.9)], 2),
+            "bytes": len(resp.content),
+        }
     return out
 
 
 def image_size() -> int:
     tag = "hyprapp-perf:measure"
     subprocess.run(["docker", "build", "-q", "-t", tag, "."], cwd=ROOT, check=True, capture_output=True)
-    out = subprocess.run(["docker", "image", "inspect", tag, "--format", "{{.Size}}"],
-                         check=True, capture_output=True, text=True)
+    out = subprocess.run(
+        ["docker", "image", "inspect", tag, "--format", "{{.Size}}"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
     return int(out.stdout.strip())
 
 
 def main(out: str, with_image: bool) -> None:
-    with tempfile.TemporaryDirectory() as tmp, Server(Path(tmp) / "data") as server, \
-            sync_playwright() as pw:
+    with tempfile.TemporaryDirectory() as tmp, Server(Path(tmp) / "data") as server, sync_playwright() as pw:
         api = Api(server).setup()
         api.items(300)
         browser = pw.chromium.launch()
         result = {
-            "git": subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT,
-                                  capture_output=True, text=True).stdout.strip(),
+            "git": subprocess.run(
+                ["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True, text=True
+            ).stdout.strip(),
             "chromium": browser.version,
             "first_load": first_loads(browser, server, api),
             "server": server_times(api),

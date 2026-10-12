@@ -6,6 +6,7 @@ Turnstile on or off in the app, the stored choice wins. Removing the feature
 is removing this module and its blueprint, the two verify_form() calls in
 auth.py, the Security pane, turnstile.js and the blocks in the auth templates.
 """
+
 import requests
 from flask import Blueprint, current_app, jsonify, request
 

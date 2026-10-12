@@ -4,6 +4,7 @@ Registered on import, for every engine in the process: WAL lets the web
 threads read while the worker writes; busy_timeout makes a writer wait for the
 lock instead of failing at once; SQLite leaves foreign keys off unless asked.
 """
+
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
