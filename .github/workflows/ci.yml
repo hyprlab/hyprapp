@@ -1,12 +1,14 @@
 name: CI
 
+# Each job runs one stage of tools/check.sh, so CI and a local run check the
+# same things the same way.
 on:
   push:
     branches: [main, beta, "stable-*"]
   pull_request:
 
 jobs:
-  test:
+  static:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,23 +20,49 @@ jobs:
           cache: pip
           cache-dependency-path: requirements*.txt
       - run: pip install -r requirements-dev.txt
-      - name: Tests
-        run: python -m pytest -q
-      - name: Documentation
-        run: python tools/check-docs.py
-      - name: Commit messages
-        if: github.event_name == 'pull_request'
-        run: |
-          # Every commit in the pull request must pass the same hook the
-          # maintainer's clone runs.
-          status=0
-          for sha in $(git rev-list --no-merges ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}); do
-            git log -1 --format=%B "$sha" > /tmp/msg
-            if ! python tools/git-hooks/commit-msg /tmp/msg; then
-              echo "::error::$(git log -1 --format='%h %s' "$sha")"
-              status=1
-            fi
-          done
-          exit $status
+      - name: Ruff, code shape, documentation, commit messages
+        run: tools/check.sh static
+        env:
+          # A pull request's commits are checked; a push has already passed
+          # the hook in the clone it came from.
+          CHECK_BASE: ${{ github.event.pull_request.base.sha || github.sha }}
+
+  tests:
+    needs: static
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - run: pip install -r requirements-dev.txt
+      - name: Tests, with the coverage floor
+        run: tools/check.sh tests
+
+  browser:
+    needs: static
+    runs-on: ubuntu-latest
+    # The browser and fonts the visual baselines were checked against.
+    container: mcr.microsoft.com/playwright/python:v1.61.0-noble
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install --break-system-packages -r requirements-dev.txt
+      - name: Browser suite, with the visual comparison
+        run: tools/check.sh browser
+      - name: Upload the screenshots that differ
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-diffs
+          path: tests/browser/visual-diffs/
+          if-no-files-found: ignore
+
+  image:
+    needs: [tests, browser]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
       - name: Image builds
-        run: docker build -t ci-check .
+        run: tools/check.sh image
