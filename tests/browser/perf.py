@@ -48,7 +48,8 @@ def first_loads(browser, server, api) -> dict:
         page = context.new_page()
         page.add_init_script(FIRST_USE)
         responses = []
-        page.on("requestfinished", responses.append)
+        # A function, not responses.append: Playwright marks its handlers.
+        page.on("requestfinished", lambda request, bucket=responses: bucket.append(request))
         page.goto("/", wait_until="load")
         page.wait_for_function("window.__firstUse !== null")
         page.wait_for_load_state("networkidle")
