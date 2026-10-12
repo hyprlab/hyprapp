@@ -1,0 +1,28 @@
+# Every route: URL, methods, endpoint. tests/test_routes.py compares the app
+# against this file. The URL and methods of a route an install or a bookmark
+# depends on never change; an endpoint name may, together with every
+# url_for() that names it. A new route is a new line here.
+/ GET main.index
+/account/password POST main.change_password
+/admin/instance POST main.admin_instance
+/admin/registration POST main.admin_registration
+/admin/turnstile POST main.admin_turnstile
+/admin/turnstile/disable POST main.admin_turnstile_disable
+/admin/users POST main.admin_create_user
+/admin/users/<int:user_id>/delete POST main.admin_delete_user
+/admin/users/<int:user_id>/password POST main.admin_reset_password
+/admin/users/<int:user_id>/toggle-admin POST main.admin_toggle_admin
+/healthz GET main.healthz
+/items POST main.item_create
+/items/<int:item_id> GET main.item_detail
+/items/<int:item_id> POST main.item_update
+/items/<int:item_id>/delete POST main.item_delete
+/items/restore POST main.item_restore
+/login GET,POST auth.login
+/logout POST auth.logout
+/register GET,POST auth.register
+/search GET main.search
+/settings POST main.settings
+/setup GET setup.wizard
+/setup POST setup.submit
+/static/<path:filename> GET static

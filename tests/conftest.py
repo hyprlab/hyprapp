@@ -51,6 +51,14 @@ def csrf(client):
 
 
 @pytest.fixture()
+def post(client, csrf):
+    """POST a JSON body with the session's CSRF header, the way app.js does."""
+    def send(url, body=None):
+        return client.post(url, json=body if body is not None else {}, headers={"X-CSRF": csrf})
+    return send
+
+
+@pytest.fixture()
 def admin(client, csrf):
     """A signed-in admin, created through the setup wizard."""
     resp = client.post("/setup", json={
