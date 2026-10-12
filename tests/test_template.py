@@ -21,22 +21,37 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-@pytest.fixture(scope="module")
-def made(tmp_path_factory):
-    """A copy of the template turned into "newapp" by init-project.sh, and
-    the HOME it installed the memories into."""
-    tmp = tmp_path_factory.mktemp("template")
-    app, home = tmp / "newapp", tmp / "home"
+def make_app(tmp, name: str, title: str) -> tuple[Path, Path]:
+    """A copy of the template turned into an app by init-project.sh, and the
+    HOME it installed the memories into. The venv's bin is on PATH, so the
+    script finds ruff to reformat after renaming."""
+    app, home = tmp / name, tmp / "home"
     excludes = [arg for name in COPY_EXCLUDES for arg in ("--exclude", name)]
     subprocess.run(["rsync", "-a", *excludes, f"{ROOT}/", f"{app}/"], check=True)
+    path = f"{Path(sys.executable).parent}{os.pathsep}{os.environ['PATH']}"
     subprocess.run(
-        ["bash", "tools/init-project.sh", "newapp", "New App", "8123", "Does a thing."],
+        ["bash", "tools/init-project.sh", name, title, "8123", "Does a thing."],
         cwd=app,
-        env={**os.environ, "HOME": str(home)},
+        env={**os.environ, "HOME": str(home), "PATH": path},
         check=True,
         capture_output=True,
     )
     return app, home
+
+
+def check(app: Path, *stages) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        ["bash", "tools/check.sh", *stages],
+        cwd=app,
+        env={**os.environ, "PYTHON": sys.executable},
+        capture_output=True,
+        text=True,
+    )
+
+
+@pytest.fixture(scope="module")
+def made(tmp_path_factory):
+    return make_app(tmp_path_factory.mktemp("template"), "newapp", "New App")
 
 
 def test_init_project_renames_everything(made):
@@ -77,14 +92,18 @@ def test_init_project_sets_up_git_and_the_memories(made):
     assert memories, "the starter memories were not installed"
 
 
-def test_the_new_app_passes_its_suite(made):
+def test_the_new_app_passes_its_checks(made):
+    """Ruff, the code and documentation checks, and the suite with its
+    coverage floor. The browser suite runs in the template's own checks; the
+    new app's name changes how its pages look, so its visual baselines start
+    fresh on its first browser run."""
     app, _ = made
-    # The browser tests run in the template's own suite; the new app's name
-    # changes how its pages look, so its visual baselines start fresh.
-    result = subprocess.run(
-        [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "-m", "not browser"],
-        cwd=app,
-        capture_output=True,
-        text=True,
-    )
-    assert result.returncode == 0, result.stdout[-2000:]
+    assert not (app / "tests" / "browser" / "baselines").exists()
+    result = check(app, "--fast")
+    assert result.returncode == 0, (result.stdout + result.stderr)[-3000:]
+
+
+def test_a_long_name_stays_within_the_checks(tmp_path):
+    app, _ = make_app(tmp_path, "warehouse_manager", "Warehouse Manager")
+    result = check(app, "static")
+    assert result.returncode == 0, (result.stdout + result.stderr)[-3000:]

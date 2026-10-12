@@ -16,7 +16,8 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-if [ -x .venv/bin/python ]; then py=.venv/bin/python; else py=python3; fi
+# PYTHON picks the interpreter; otherwise the project's venv, else python3.
+if [ -n "${PYTHON:-}" ]; then py=$PYTHON; elif [ -x .venv/bin/python ]; then py=.venv/bin/python; else py=python3; fi
 pkg=$(ls */__init__.py | grep -vE '^(tests|tools)/' | head -1 | cut -d/ -f1)
 
 step() { printf '\n==> %s\n' "$*"; }

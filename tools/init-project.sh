@@ -141,11 +141,21 @@ v3.0 or later** ([AGPL-3.0-or-later](LICENSE)).
 © $(date +%Y) Hyprlab
 README
 
-# 4. Template-only files.
+# 4. Template-only files. The visual baselines show the template's name, so
+# the app's first browser run writes its own.
 rm -f docs/TEMPLATE.md tests/test_template.py
 sed -i '/TEMPLATE\.md/d' docs/README.md
-rm -rf claude-memory-hylki var .venv .pytest_cache
+rm -rf claude-memory-hylki var .venv .pytest_cache tests/browser/baselines tests/browser/visual-diffs
 find . -name __pycache__ -type d -prune -exec rm -rf {} +
+
+# The new name changes line lengths: format again, if ruff is at hand.
+RUFF=$(command -v ruff || true)
+[ -n "$RUFF" ] || [ ! -x "$HOME/hyprapp/.venv/bin/ruff" ] || RUFF="$HOME/hyprapp/.venv/bin/ruff"
+if [ -n "$RUFF" ]; then
+    "$RUFF" format --quiet . && "$RUFF" check --quiet --fix --select I . && echo "==> formatted with ruff"
+else
+    echo "==> ruff not found: run .venv/bin/ruff format . once the dev requirements are installed"
+fi
 
 # 5. Git, with the hooks on and the tool's files kept out of the repository.
 git init -q -b main
@@ -171,13 +181,16 @@ cat <<DONE
 $NAME is ready in $ROOT.
 
   python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
-  .venv/bin/python -m pytest              # the suite should pass untouched
+  .venv/bin/python -m playwright install chromium
+  tools/check.sh                          # everything CI checks; the first run
+                                          # writes the visual baselines: commit them
   .venv/bin/python run.py                 # http://localhost:8000
   tools/redeploy.sh                       # the container, http://localhost:$PORT
 
 Next: redraw the mark ($PKG/static/img/logo.svg and
-$PKG/templates/partials/mark.html), set --accent in $PKG/static/css/app.css if
-the app gets its own color, replace the Item model, then make the first commit:
+$PKG/templates/partials/mark.html), set the accent tokens in
+$PKG/static/css/tokens.css if the app gets its own color, replace the Item
+model, then make the first commit:
 
   git add -A && git commit -m "chore: start $PKG from the Hyprlab Flask template"
 DONE
