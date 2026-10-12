@@ -129,6 +129,13 @@ def test_delete_returns_a_snapshot(client, csrf, post, admin):
     assert post(f"/items/{item['id']}/delete").status_code == 404
 
 
+def test_someone_else_s_record_cannot_be_deleted(post, second_user):
+    item = make(post, "Mine")
+    other, token = second_user
+    assert other.post(f"/items/{item['id']}/delete", json={}, headers={"X-CSRF": token}).status_code == 404
+    assert post(f"/items/{item['id']}", {}).get_json()["item"]["title"] == "Mine"
+
+
 def test_restore_makes_a_new_record_from_the_snapshot(post, admin):
     item = make(post, "Back", body="Body")
     newer = make(post, "Newer")

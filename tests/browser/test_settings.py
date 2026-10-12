@@ -6,7 +6,7 @@ import re
 import pytest
 from playwright.sync_api import expect
 
-from .conftest import PHONE
+from .conftest import PHONE, SHORT, scroll_partway
 
 SECTIONS = [
     ("appearance", "Appearance"),
@@ -89,16 +89,18 @@ def test_arrow_keys_move_through_the_rail(page):
     expect(page.locator("#settings-section-title")).to_have_text("Appearance")
 
 
-def test_a_section_keeps_its_scroll_when_chosen_again(page):
+def test_a_section_keeps_its_scroll_when_chosen_again(new_page, api):
     """A quirk the refactor keeps (see the final report): the code resets the
     scroll while the pane is still hidden, which has no effect."""
+    page = new_page(api, viewport=SHORT)
+    page.goto("/")
     open_settings(page)
     page.locator('.settings-navitem[data-section="about"]').click()
     pane = page.locator('.settings-pane[data-pane="about"]')
-    pane.evaluate("p => p.scrollTop = 200")
+    scrolled = scroll_partway(pane)
     page.locator('.settings-navitem[data-section="account"]').click()
     page.locator('.settings-navitem[data-section="about"]').click()
-    assert pane.evaluate("p => p.scrollTop") == 200
+    assert pane.evaluate("p => p.scrollTop") == scrolled
 
 
 def test_changing_the_name(page):

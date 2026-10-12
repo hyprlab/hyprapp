@@ -223,6 +223,19 @@ def open_record(page, title):
     playwright_api.expect(page.locator("#sheet-title")).to_have_text(title)
 
 
+# Short enough that the About pane overflows whatever an app's changelog holds.
+SHORT = {"width": 1280, "height": 420}
+
+
+def scroll_partway(pane) -> int:
+    """Scroll a pane as far as 250px, or as far as it goes, and say where."""
+    reach = pane.evaluate("p => p.scrollHeight - p.clientHeight")
+    assert reach > 0, "the pane has nothing to scroll"
+    target = min(250, reach)
+    pane.evaluate(f"p => p.scrollTop = {target}")
+    return target
+
+
 def wait_for_reload(page, action):
     """Run an action that reloads the page, and wait until the new one has run its scripts."""
     with page.expect_navigation(wait_until="load"):

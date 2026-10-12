@@ -199,8 +199,9 @@ def test_sort_and_view_links_keep_the_other_choices(client, records):
     assert 'href="/?filter=done&amp;sort=title&amp;view=list"' in html
     assert 'href="/?view=cards&amp;filter=done&amp;sort=oldest"' in html
     assert '<p class="menupop-head">Sort done</p>' in html
-    assert re.search(
-        r'class="menuopt is-active" role="menuitem"\s+href="/\?filter=done&amp;sort=oldest', html
+    assert (
+        'class="menuopt is-active" role="menuitem"\n               href="/?filter=done&amp;sort=oldest'
+        in html
     )
 
 

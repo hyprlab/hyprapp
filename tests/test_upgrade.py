@@ -101,6 +101,15 @@ def test_the_upgraded_schema_matches_a_fresh_one(installed, tmp_path):
     assert columns(installed / "hyprapp.db") == columns(fresh / "hyprapp.db")
 
 
+def test_the_upgraded_indexes_match_a_fresh_one(installed, tmp_path):
+    boot(installed)
+    fresh = tmp_path / "fresh"
+    fresh.mkdir()
+    boot(fresh)
+    query = "SELECT name, tbl_name, sql FROM sqlite_master WHERE type = 'index' ORDER BY name"
+    assert rows(installed / "hyprapp.db", query) == rows(fresh / "hyprapp.db", query)
+
+
 def test_the_migration_step_adds_its_column(installed, caplog):
     db_file = installed / "hyprapp.db"
     with closing(sqlite3.connect(db_file)) as conn:

@@ -4,7 +4,7 @@ import json
 
 from playwright.sync_api import expect
 
-from .conftest import wait_for_reload
+from .conftest import SHORT, scroll_partway, wait_for_reload
 
 
 def open_form(page):
@@ -99,15 +99,16 @@ def test_the_page_behind_a_dialog_does_not_scroll(page, api):
 # ———— coming back after a reload ————
 
 
-def test_settings_come_back_with_their_section_and_scroll(page):
+def test_settings_come_back_with_their_section_and_scroll(new_page, api):
+    page = new_page(api, viewport=SHORT)
+    page.goto("/")
     page.locator(".sidebar-foot").get_by_role("button", name="Settings").click()
     page.locator('.settings-navitem[data-section="about"]').click()
-    pane = page.locator('.settings-pane[data-pane="about"]')
-    pane.evaluate("p => p.scrollTop = 250")
+    scrolled = scroll_partway(page.locator('.settings-pane[data-pane="about"]'))
     page.reload()
     expect(page.locator("#settings-modal")).to_be_visible()
     expect(page.locator("#settings-section-title")).to_have_text("About")
-    page.wait_for_function("document.querySelector('.settings-pane.is-active').scrollTop === 250")
+    page.wait_for_function(f"document.querySelector('.settings-pane.is-active').scrollTop === {scrolled}")
 
 
 def test_a_draft_comes_back(page):

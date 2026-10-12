@@ -169,6 +169,7 @@ def failing_app(app):
 
     app.add_url_rule("/_boom", "boom", boom)
     app.add_url_rule("/_forbidden", "forbidden", lambda: abort(403))
+    app.add_url_rule("/_bad", "bad", lambda: abort(400))
     app.add_url_rule("/_teapot", "teapot", lambda: abort(418))
     return app
 
@@ -205,6 +206,7 @@ def test_a_server_error_is_logged_and_shown(signed_in, caplog, monkeypatch):
     [
         ("/no-such-page", 404, "Not Found", "There is nothing at this address."),
         ("/_forbidden", 403, "Forbidden", "Your account does not have access to this."),
+        ("/_bad", 400, "Bad Request", "The request did not make sense to the server."),
     ],
 )
 def test_error_pages(signed_in, url, code, title, text):
