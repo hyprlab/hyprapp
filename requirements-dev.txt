@@ -1,5 +1,8 @@
 -r requirements.txt
 pytest==8.3.3
+# Coverage, with its floor in pyproject.toml.
+pytest-cov==7.1.0
+coverage==7.16.2
 # Lint and format (pyproject.toml, [tool.ruff]).
 ruff==0.17.0
 # The browser tests (tests/browser). After installing, fetch the browser once:

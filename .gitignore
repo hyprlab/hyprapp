@@ -13,5 +13,6 @@ claude-memory-hylki/
 
 # Test output: coverage data, and screenshots from a failed visual comparison.
 .coverage
+.coverage.*
 htmlcov/
 tests/browser/visual-diffs/

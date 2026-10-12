@@ -42,3 +42,16 @@ html = 200
 [tool.hyprapp.checks.exceptions]
 # "path" (over its line budget), "path:function" (over a function budget) or
 # "path:duplicates" (left out of the duplicate search) = "why".
+
+[tool.coverage.run]
+source = ["hyprapp"]
+# Measure the Python processes the tests start too: the worker's thread is
+# tested in a fresh interpreter, since it starts once per process.
+patch = ["subprocess"]
+
+[tool.coverage.report]
+# The floor only goes up: when coverage rises, raise this to the new figure,
+# rounded down. Never lower it to let a change in; test the change instead.
+fail_under = 99
+show_missing = true
+skip_covered = true
