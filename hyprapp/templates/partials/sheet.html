@@ -1,0 +1,27 @@
+{% from "partials/icons.html" import icon, close_button %}
+<!-- ————— Detail sheet ————— -->
+{% macro action(id, label, title, icon_name, danger=False) %}
+      <button class="iconbtn{{ ' iconbtn--danger' if danger }}" id="{{ id }}" aria-label="{{ label }}" title="{{ title }}">
+        {{ icon(icon_name) }}
+      </button>
+{% endmacro %}
+<dialog class="sheet" id="sheet">
+  <div class="sheet-bar">
+    {{ close_button(title="Close (Esc)") }}
+    <div class="sheet-bar-actions">
+      {{ action("sheet-prev", "Previous record", "Previous (k)", "back") }}
+      {{ action("sheet-next", "Next record", "Next (j)", "next") }}
+      {{ action("sheet-done", "Mark as done", "Mark as done (d)", "done") }}
+      {{ action("sheet-pin", "Pin", "Pin (p)", "pin") }}
+      {{ action("sheet-edit", "Edit", "Edit (e)", "edit") }}
+      {{ action("sheet-copy", "Copy link", "Copy link", "link") }}
+      {{ action("sheet-delete", "Delete", "Delete", "delete", danger=True) }}
+    </div>
+  </div>
+  <article class="sheet-article">
+    <p class="kicker" id="sheet-kicker"></p>
+    <h1 class="sheet-title" id="sheet-title"></h1>
+    <p class="sheet-meta" id="sheet-meta"></p>
+    <div class="prose" id="sheet-body"></div>
+  </article>
+</dialog>

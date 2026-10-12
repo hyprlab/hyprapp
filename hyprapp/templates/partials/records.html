@@ -1,9 +1,10 @@
 {# The record list. Included by app.html on a page load, and returned on its
    own (?partial=1) when the client asks for the next page. #}
+{% from "partials/icons.html" import icon %}
 {% macro pin(item) %}
   <button class="pinbtn {{ 'is-pinned' if item.pinned }}" data-pin="{{ item.id }}"
           aria-label="{{ 'Unpin' if item.pinned else 'Pin' }}" title="{{ 'Unpin' if item.pinned else 'Pin' }}">
-    <svg viewBox="0 0 24 24"><path d="M7 4.5h10a1 1 0 0 1 1 1V20l-6-3.5L6 20V5.5a1 1 0 0 1 1-1Z"/></svg>
+    {{ icon("pin") }}
   </button>
 {% endmacro %}
 
@@ -45,7 +46,7 @@
       <span class="btn-busy" hidden>Loading…</span>
     </button>
     <span class="pager-auto">
-      <svg class="pager-spin" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.6"/></svg>
+      {{ icon("loading", "pager-spin") }}
       Loading more
     </span>
   </div>

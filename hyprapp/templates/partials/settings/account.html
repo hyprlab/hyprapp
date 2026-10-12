@@ -1,0 +1,15 @@
+      <p class="setting-label">Profile</p>
+      <label class="field field--narrow">
+        <span class="field-label">Name</span>
+        <input id="acct-name" maxlength="120" placeholder="Your name" autocomplete="name" value="{{ current_user.name or '' }}">
+      </label>
+      <p class="setting-label setting-label--spaced">Change password</p>
+      <form id="password-form" class="stack">
+        <label class="field"><span class="field-label">Current password</span>
+          <input type="password" id="pw-current" autocomplete="current-password" required></label>
+        <label class="field"><span class="field-label">New password</span>
+          <input type="password" id="pw-new" minlength="8" autocomplete="new-password" required></label>
+        <p class="form-error" id="pw-error" hidden></p>
+        <button class="btn btn--primary" type="submit">Update password</button>
+      </form>
+      <p class="hint account-meta">Signed in as <strong>{{ current_user.username }}</strong>{% if current_user.is_admin %} <span class="chip">admin</span>{% endif %} · member since {{ current_user.created_at.strftime('%B %Y') }}</p>

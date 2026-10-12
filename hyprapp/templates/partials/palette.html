@@ -1,0 +1,10 @@
+{% from "partials/icons.html" import icon %}
+<!-- ————— Search palette ————— -->
+<dialog class="palette" id="search-modal">
+  <div class="palette-inputrow">
+    {{ icon("search") }}
+    <input id="search-input" placeholder="Search records…" aria-label="Search" autocomplete="off" spellcheck="false">
+    <kbd>esc</kbd>
+  </div>
+  <div class="palette-results" id="search-results" hidden></div>
+</dialog>

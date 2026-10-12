@@ -1,0 +1,64 @@
+{% from "partials/icons.html" import icon, theme_toggle %}
+{% macro navitem(name, label, icon_name, active, count=None) %}
+        <a class="navitem {{ 'is-active' if active }}" href="{{ url_for('main.index', filter=name) }}">
+          {{ icon(icon_name) }}
+          <span>{{ label }}</span>
+          {{ caller() if caller else "" }}
+          {%- if count %}<span class="count">{{ count }}</span>{% endif %}
+        </a>
+{% endmacro %}
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <a class="brand" href="{{ url_for('main.index') }}">
+        {% include "partials/mark.html" %}
+        <span class="wordmark">{{ app_name }}</span>
+      </a>
+      <button class="iconbtn sidebar-close" data-close-sidebar aria-label="Close menu">
+        {{ icon("close") }}
+      </button>
+    </div>
+
+    <div class="sidebar-scroll">
+      <nav class="nav-primary" aria-label="Records">
+        {% call navitem("open", "Open", "open", filter == "open") -%}
+          {% if counts.open %}<span class="count count--accent" id="count-open">{{ counts.open if counts.open < 1000 else '999+' }}</span>{% endif %}
+        {%- endcall %}
+        {{ navitem("all", "All records", "all", filter == "all") }}
+        {{ navitem("pinned", "Pinned", "pin", filter == "pinned", counts.pinned) }}
+        {{ navitem("done", "Done", "done", filter == "done", counts.done) }}
+      </nav>
+
+      {# The scrolling section: where an app lists its own collection (feeds,
+         projects, boards). The head above and the foot below stay pinned
+         however long it grows. .sideitem is the row style. #}
+      <div class="sidebar-label">
+        <span>Collections</span>
+        <button class="iconbtn iconbtn--sm" data-open="item-modal" aria-label="New record" title="New record">
+          {{ icon("plus") }}
+        </button>
+      </div>
+      <ul class="sidelist">
+        <li class="sidelist-empty">The app's own collection goes here.</li>
+      </ul>
+    </div>
+
+    <div class="sidebar-foot">
+      <button type="button" class="user" data-open="settings-modal" data-settings-section="account" title="Account settings">
+        <span class="avatar" id="user-avatar">{{ current_user.display_name[0]|upper }}</span>
+        <span class="user-meta">
+          <span class="user-name" id="user-name">{{ current_user.display_name }}</span>
+          <span class="user-email" id="user-email" {% if not current_user.name %}hidden{% endif %}>{{ current_user.username }}</span>
+        </span>
+      </button>
+      {{ theme_toggle() }}
+      <button class="iconbtn" data-open="settings-modal" aria-label="Settings" title="Settings">
+        {{ icon("settings") }}
+      </button>
+      <form method="post" action="{{ url_for('auth.logout') }}" class="inline-form">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <button class="iconbtn" aria-label="Sign out" title="Sign out">
+          {{ icon("sign-out") }}
+        </button>
+      </form>
+    </div>
+  </aside>

@@ -1,0 +1,46 @@
+{% from "partials/icons.html" import icon, theme_toggle %}
+    <header class="topbar">
+      <button class="iconbtn topbar-menu" data-open-sidebar aria-label="Open menu">
+        {{ icon("menu") }}
+      </button>
+
+      <h2 class="context-title">{{ titles[filter] }}{% if sort != 'newest' %}<span class="title-chip">{{ sorts[sort][0] }}</span>{% endif %}</h2>
+
+      <div class="topbar-actions">
+        <button class="searchpill" id="search-btn" aria-label="Search" title="Search">
+          {{ icon("search") }}
+          <kbd id="search-kbd">Ctrl K</kbd>
+        </button>
+        <button class="iconbtn" data-open="item-modal" aria-label="New record" title="New record (n)">
+          {{ icon("plus") }}
+        </button>
+
+        <div class="menu" id="sort-menu">
+          <button class="menubtn" aria-haspopup="true" aria-expanded="false" title="Sort">
+            {{ icon("sort") }}
+            <span class="menubtn-label">{{ sorts[sort][0] }}</span>
+            {{ icon("chevron-down", "chev") }}
+          </button>
+          <div class="menupop" role="menu" hidden>
+            <p class="menupop-head">Sort {{ titles[filter]|lower }}</p>
+            {% for key, (label, _order) in sorts.items() %}
+            <a class="menuopt {{ 'is-active' if key == sort }}" role="menuitem"
+               href="{{ url_for('main.index', filter=filter, sort=key, view=request.args.get('view')) }}">
+              <span>{{ label }}</span>
+              {{ icon("tick", "tick") }}
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="viewswitch" role="group" aria-label="View">
+          {% for name, label in (("cards", "Cards"), ("list", "List")) %}
+          <a class="viewswitch-btn {{ 'is-active' if view == name }}" title="{{ label }}"
+             href="{{ url_for('main.index', view=name, filter=filter, sort=sort) }}">
+            {{ icon(name) }}
+          </a>
+          {% endfor %}
+        </div>
+        {{ theme_toggle() }}
+      </div>
+    </header>

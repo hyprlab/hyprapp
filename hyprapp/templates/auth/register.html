@@ -1,12 +1,6 @@
-{% extends "base.html" %}
+{% extends "auth/form.html" %}
 {% block title %}Create account — {{ app_name }}{% endblock %}
-{% block bodyclass %}auth-body{% endblock %}
-{% block body %}
-<main class="auth-wrap">
-  <div class="auth-card">
-    {% include "partials/auth_head.html" %}
-    <form method="post" class="auth-form">
-      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+{% block fields %}
       <label class="field">
         <span class="field-label">Name</span>
         <input name="name" type="text" autocomplete="name" maxlength="120" placeholder="Your name"
@@ -26,15 +20,8 @@
         <span class="field-label">Confirm password</span>
         <input name="confirm" type="password" required minlength="8" autocomplete="new-password">
       </label>
-      {% if turnstile_site_key %}
-        <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-theme="auto"></div>
-      {% endif %}
-      <button class="btn btn--primary btn--block" type="submit">Create account</button>
-    </form>
+{% endblock %}
+{% block submit %}Create account{% endblock %}
+{% block alt %}
     <p class="auth-alt">Already have an account? <a href="{{ url_for('auth.login') }}">Sign in</a></p>
-  </div>
-</main>
-{% if turnstile_site_key %}
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-{% endif %}
 {% endblock %}

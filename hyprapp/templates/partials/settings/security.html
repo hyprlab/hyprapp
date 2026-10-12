@@ -1,0 +1,43 @@
+      <p class="setting-label">Cloudflare Turnstile</p>
+      <p class="hint">Adds a Cloudflare challenge to the sign-in and sign-up pages,
+        which stops most automated password guessing and sign-up spam. It needs a
+        free widget from the <a class="link" href="https://dash.cloudflare.com/?to=/:account/turnstile" target="_blank" rel="noopener">Cloudflare dashboard</a>
+        with this site's hostname in its list.</p>
+
+      <div class="ts-status" id="ts-status">
+        <span class="chip {{ '' if turnstile.on else 'chip--muted' }}" id="ts-chip">{{ 'On' if turnstile.on else 'Off' }}</span>
+        <span class="hint" id="ts-status-text">
+          {%- if turnstile.source == 'environment' %}From the TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY environment variables. Keys saved here take over from them.
+          {%- elif turnstile.on %}Sign-in and sign-up show a challenge.
+          {%- else %}Sign-in and sign-up have no challenge.{% endif -%}
+        </span>
+      </div>
+
+      <form id="ts-form" class="stack" autocomplete="off"
+            data-on="{{ '1' if turnstile.on else '0' }}" data-has-secret="{{ '1' if turnstile.secret_hint else '0' }}">
+        <label class="field">
+          <span class="field-label">Site key</span>
+          <input id="ts-site" value="{{ turnstile.site_key }}" spellcheck="false" maxlength="200" placeholder="0x4AAAAAAA…">
+        </label>
+        <label class="field">
+          <span class="field-label">Secret key</span>
+          <input id="ts-secret" type="password" spellcheck="false" maxlength="200"
+                 placeholder="{{ 'Saved, ends in ' ~ turnstile.secret_hint ~ '. Leave empty to keep it.' if turnstile.secret_hint else 'From the same widget' }}">
+        </label>
+        <div class="ts-challenge" id="ts-challenge" hidden>
+          <p class="hint">Complete the challenge. It proves the keys belong together
+            and work on this address before anyone is asked to pass it.</p>
+          <div id="ts-widget"></div>
+        </div>
+        <p class="form-error" id="ts-error" hidden></p>
+        <div class="ts-actions">
+          <button class="btn btn--primary" type="submit" id="ts-verify">
+            <span class="btn-label">{{ 'Verify and save the keys' if turnstile.on else 'Verify and turn on' }}</span>
+            <span class="btn-busy" hidden>Checking…</span>
+          </button>
+          <button class="btn btn--ghost" type="button" id="ts-off" {% if not turnstile.on %}hidden{% endif %}>Turn off</button>
+        </div>
+      </form>
+
+      <p class="hint ts-recovery">Locked out of sign-in anyway? On the server,
+        <code>docker exec {{ app_package }} flask turnstile off</code> turns it off.</p>

@@ -1,0 +1,24 @@
+{% from "partials/icons.html" import close_button %}
+<!-- ————— New / edit record ————— -->
+<dialog class="modal" id="item-modal">
+  <div class="modal-head">
+    <h3 id="item-modal-title">New record</h3>
+    {{ close_button() }}
+  </div>
+  <form id="item-form" class="modal-body">
+    <input type="hidden" id="item-id">
+    <label class="field">
+      <span class="field-label">Title</span>
+      <input id="item-title" maxlength="300" autocomplete="off" required autofocus>
+    </label>
+    <label class="field">
+      <span class="field-label">Notes</span>
+      <textarea id="item-body" rows="5" placeholder="Anything worth keeping with it."></textarea>
+    </label>
+    <p class="form-error" id="item-error" hidden></p>
+    <button class="btn btn--primary btn--block" type="submit">
+      <span class="btn-label">Save</span>
+      <span class="btn-busy" hidden>Saving…</span>
+    </button>
+  </form>
+</dialog>

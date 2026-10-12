@@ -1,0 +1,6 @@
+{# The brand block every card page opens with; set tagline to add the line under it. #}
+<div class="auth-mark">
+  {% include "partials/mark.html" %}
+  <h1 class="wordmark">{{ app_name }}</h1>
+  {% if tagline %}<p class="auth-tag">{{ app_tagline }}</p>{% endif %}
+</div>

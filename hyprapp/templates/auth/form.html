@@ -1,0 +1,20 @@
+{# Sign-in and sign-up: the brand, flashed messages, a form with the session
+   token and, when Turnstile is on, its challenge. #}
+{% extends "card.html" %}
+{% block card %}
+    {% include "partials/auth_head.html" %}
+    <form method="post" class="auth-form">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+{% block fields %}{% endblock %}
+      {% if turnstile_site_key %}
+        <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-theme="auto"></div>
+      {% endif %}
+      <button class="btn btn--primary btn--block" type="submit">{% block submit %}{% endblock %}</button>
+    </form>
+{% block alt %}{% endblock %}
+{% endblock %}
+{% block after_card %}
+{% if turnstile_site_key %}
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,62 @@
+{% from "partials/icons.html" import icon, close_button %}
+<!-- ————— Settings ————— -->
+{# The one place a section is declared: (id, label, group, icon). The rail,
+   the header and the panes all follow it; a section's pane is
+   partials/settings/<id>.html. About is pinned at the rail's foot. #}
+{% set settings_sections = [
+  ('appearance', 'Appearance', 'Preferences', 'sun'),
+  ('account', 'Account', 'Preferences', 'account'),
+] + ([
+  ('admin', 'Admin', 'Instance', 'admin'),
+  ('security', 'Security', 'Instance', 'security'),
+] if current_user.is_admin else []) %}
+{% set about_section = ('about', 'About', None, 'about') %}
+{% macro settings_navitem(id, label, icon_name, active=false) %}
+  <button type="button" class="settings-navitem {{ 'is-active' if active }}" role="tab"
+          id="settings-tab-{{ id }}" data-section="{{ id }}" aria-controls="settings-{{ id }}"
+          aria-selected="{{ 'true' if active else 'false' }}" tabindex="{{ '0' if active else '-1' }}">
+    {{ icon(icon_name) }}
+    <span>{{ label }}</span>
+    {{ icon("chevron-right", "settings-navitem-chev") }}
+  </button>
+{% endmacro %}
+<dialog class="modal" id="settings-modal" aria-labelledby="settings-title">
+  <div class="settings">
+    <aside class="settings-nav">
+      <div class="settings-nav-head">
+        <h3 class="settings-nav-title" id="settings-title">Settings</h3>
+        {{ close_button("iconbtn settings-nav-close") }}
+      </div>
+      <div class="settings-nav-tabs" role="tablist" aria-orientation="vertical" aria-labelledby="settings-title">
+        <div class="settings-nav-list">
+          {% set ns = namespace(group=None) %}
+          {% for id, label, group, icon_name in settings_sections %}
+            {% if group != ns.group %}<p class="settings-nav-label">{{ group }}</p>{% set ns.group = group %}{% endif %}
+            {{ settings_navitem(id, label, icon_name, loop.first) }}
+          {% endfor %}
+        </div>
+        {# Pinned like the main sidebar's foot: About is always one click away. #}
+        <div class="settings-nav-foot">
+          {{ settings_navitem(about_section[0], about_section[1], about_section[3]) }}
+          <p class="settings-nav-version" role="presentation">{{ app_name }} {{ app_version }}</p>
+        </div>
+      </div>
+    </aside>
+
+    <div class="settings-main">
+      <header class="settings-head">
+        <button class="iconbtn settings-back" aria-label="All settings" title="All settings">
+          {{ icon("back") }}
+        </button>
+        <h4 class="settings-head-title" id="settings-section-title">{{ settings_sections[0][1] }}</h4>
+        {{ close_button(title="Close (Esc)") }}
+      </header>
+
+    {% for id, label, group, icon_name in settings_sections + [about_section] %}
+    <section class="settings-pane{{ ' is-active' if loop.first }}" data-pane="{{ id }}" id="settings-{{ id }}" role="tabpanel" aria-labelledby="settings-tab-{{ id }}" tabindex="0">
+      {% include "partials/settings/" ~ id ~ ".html" %}
+    </section>
+    {% endfor %}
+    </div>
+  </div>
+</dialog>

@@ -1,0 +1,49 @@
+      <div class="about-hero">
+        <canvas class="about-hero-bg" aria-hidden="true"></canvas>
+        <div class="about-brand">
+          {% with extra = 'mark--about' %}{% include "partials/mark.html" %}{% endwith %}
+          <div class="about-name">{{ app_name }}</div>
+          <div class="about-version">Version {{ app_version }}</div>
+          <p class="about-tagline">{{ app_tagline }}</p>
+          <p class="about-credit">Built by
+            <a class="hyprlab-credit" href="https://hyprlab.co" target="_blank" rel="noopener">
+              <img src="{{ static_url('img/icon_hyprlab.png') }}" alt="">Hyprlab</a></p>
+          <p class="about-license">Free software under the
+            <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener">GNU AGPL-3.0</a>{% if source_url %}
+            · <a href="{{ source_url }}" target="_blank" rel="noopener">Source</a>{% endif %}</p>
+        </div>
+        <div class="about-stack">
+          <div class="about-stack-label">Built with</div>
+          <div class="tech-stack">
+            {% for name, slug, url in [
+              ('Python', 'python', 'https://www.python.org/'),
+              ('Flask', 'flask', 'https://flask.palletsprojects.com/'),
+              ('Jinja', 'jinja', 'https://jinja.palletsprojects.com/'),
+              ('SQLAlchemy', 'sqlalchemy', 'https://www.sqlalchemy.org/'),
+              ('SQLite', 'sqlite', 'https://www.sqlite.org/'),
+              ('Gunicorn', 'gunicorn', 'https://gunicorn.org/'),
+              ('JavaScript', 'javascript', 'https://developer.mozilla.org/docs/Web/JavaScript'),
+              ('Docker', 'docker', 'https://www.docker.com/'),
+              ('Cloudflare', 'cloudflare', 'https://www.cloudflare.com/'),
+            ] %}
+            <a class="tech-tile" href="{{ url }}" target="_blank" rel="noopener" title="{{ name }}">
+              <span class="tech-icon" style="-webkit-mask-image: url('{{ static_url('img/tech/' ~ slug ~ '.svg') }}'); mask-image: url('{{ static_url('img/tech/' ~ slug ~ '.svg') }}');"></span>
+              <span class="tech-tile-name">{{ name }}</span>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <details class="about-details" open>
+        <summary class="about-summary"><h4>Changelog</h4></summary>
+        <ul class="release-list">
+          {% for e in app_changelog() %}
+          <li>
+            <div class="rel-version">{{ e.version }}{% if e.is_latest %} <span class="chip">latest</span>{% endif %}</div>
+            {% if e.date_label %}<div class="rel-meta">{{ e.date_label }}</div>{% endif %}
+            <div class="rel-body">{{ e.body_html|safe }}</div>
+          </li>
+          {% endfor %}
+        </ul>
+      </details>

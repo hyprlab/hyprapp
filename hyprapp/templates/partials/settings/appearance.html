@@ -1,0 +1,20 @@
+      <p class="setting-label">Theme</p>
+      <div class="theme-picker">
+        {% for t in ('system', 'light', 'dark') %}
+        <label class="theme-opt">
+          <input type="radio" name="theme" value="{{ t }}" {{ 'checked' if current_user.theme == t }}>
+          <span class="theme-chip theme-chip--{{ t }}"><span class="theme-chip-dot"></span>{{ t|capitalize }}</span>
+        </label>
+        {% endfor %}
+      </div>
+
+      <p class="setting-label setting-label--spaced">Default view</p>
+      <div class="seg">
+        {% for v in ('cards', 'list') %}
+        <label><input type="radio" name="view_mode" value="{{ v }}" {{ 'checked' if current_user.view_mode == v }}><span>{{ v|capitalize }}</span></label>
+        {% endfor %}
+      </div>
+      <label class="check setting-row">
+        <input type="checkbox" id="infinite-scroll" {{ 'checked' if current_user.infinite_scroll }}>
+        <span>Load more records automatically as you scroll</span>
+      </label>

@@ -1,0 +1,11 @@
+{# The centered card the sign-in, sign-up, setup and error pages share. #}
+{% extends "base.html" %}
+{% block bodyclass %}auth-body{% endblock %}
+{% block body %}
+<main class="auth-wrap">
+  <div {% block card_attrs %}class="auth-card"{% endblock %}>
+{% block card %}{% endblock %}
+  </div>
+</main>
+{% block after_card %}{% endblock %}
+{% endblock %}

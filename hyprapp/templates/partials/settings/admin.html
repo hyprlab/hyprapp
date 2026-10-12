@@ -1,0 +1,56 @@
+{% from "partials/icons.html" import icon %}
+      <p class="setting-label">Instance</p>
+      <label class="check">
+        <input type="checkbox" id="reg-open" {{ 'checked' if allow_registration }}>
+        <span>Allow new account registration</span>
+      </label>
+      <div class="inst-grid">
+        <label class="field">
+          <span class="field-label">Background work every (minutes)</span>
+          <input type="number" id="inst-worker" min="0" max="1440" step="1" value="{{ inst_worker }}">
+        </label>
+        <label class="field">
+          <span class="field-label">Records per page</span>
+          <input type="number" id="inst-perpage" min="10" max="500" step="10" value="{{ inst_per_page }}">
+        </label>
+      </div>
+      <p class="hint">0 minutes pauses the background worker. A change takes effect after the current wait.</p>
+      <p class="hint admin-stats">{{ admin_stats.users }} {{ 'user' if admin_stats.users == 1 else 'users' }} · {{ admin_stats.records }} {{ 'record' if admin_stats.records == 1 else 'records' }}</p>
+
+      <p class="setting-label">Users</p>
+      <form class="adduser" id="admin-adduser">
+        <input type="text" id="au-name" placeholder="Name" aria-label="Name" autocomplete="off" maxlength="120">
+        <input type="email" id="au-email" placeholder="user@example.com" aria-label="Email address" autocomplete="off" spellcheck="false" maxlength="80" required>
+        <input type="password" id="au-password" placeholder="Temporary password" aria-label="Temporary password" autocomplete="new-password" minlength="8" required>
+        <span class="adduser-actions">
+          <label class="check"><input type="checkbox" id="au-admin"><span>Admin</span></label>
+          <button class="btn btn--primary" type="submit">Add user</button>
+        </span>
+      </form>
+      <p class="form-error" id="au-error" hidden></p>
+      <ul class="manage-list">
+        {% for u in admin_users %}
+        {% set n = admin_item_counts.get(u.id, 0) %}
+        <li class="manage-item" data-user="{{ u.id }}" data-username="{{ u.username }}">
+          <span class="avatar">{{ u.display_name[0]|upper }}</span>
+          <div class="manage-meta">
+            <span class="manage-title">{{ u.display_name }}
+              {% if u.is_admin %}<span class="chip">admin</span>{% endif %}
+              {% if u.id == current_user.id %}<span class="chip chip--muted">you</span>{% endif %}
+            </span>
+            <span class="manage-sub">{{ u.username }} · joined {{ u.created_at.strftime('%b %-d, %Y') }} · {{ n }} {{ 'record' if n == 1 else 'records' }}</span>
+          </div>
+          <button class="iconbtn iconbtn--sm" data-admin-password aria-label="Reset password" title="Reset password">
+            {{ icon("key") }}
+          </button>
+          {% if u.id != current_user.id %}
+          <button class="iconbtn iconbtn--sm" data-admin-toggle aria-label="{{ 'Remove admin' if u.is_admin else 'Make admin' }}" title="{{ 'Remove admin' if u.is_admin else 'Make admin' }}">
+            {{ icon("shield" if u.is_admin else "admin") }}
+          </button>
+          <button class="iconbtn iconbtn--sm iconbtn--danger" data-admin-delete aria-label="Delete user" title="Delete user">
+            {{ icon("delete") }}
+          </button>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
