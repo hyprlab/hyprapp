@@ -13,6 +13,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
+COPY_EXCLUDES = [".git", ".venv", "var", ".pytest_cache", "claude-memory-hylki", "visual-diffs"]
 
 pytestmark = pytest.mark.skipif(
     not (ROOT / "tools" / "init-project.sh").exists() or not shutil.which("rsync") or not shutil.which("git"),
@@ -20,36 +21,26 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-def test_init_project_produces_a_working_app(tmp_path):
-    app = tmp_path / "newapp"
-    subprocess.run(
-        [
-            "rsync",
-            "-a",
-            "--exclude",
-            ".git",
-            "--exclude",
-            ".venv",
-            "--exclude",
-            "var",
-            "--exclude",
-            ".pytest_cache",
-            "--exclude",
-            "claude-memory-hylki",
-            f"{ROOT}/",
-            f"{app}/",
-        ],
-        check=True,
-    )
-    env = {**os.environ, "HOME": str(tmp_path / "home")}
+@pytest.fixture(scope="module")
+def made(tmp_path_factory):
+    """A copy of the template turned into "newapp" by init-project.sh, and
+    the HOME it installed the memories into."""
+    tmp = tmp_path_factory.mktemp("template")
+    app, home = tmp / "newapp", tmp / "home"
+    excludes = [arg for name in COPY_EXCLUDES for arg in ("--exclude", name)]
+    subprocess.run(["rsync", "-a", *excludes, f"{ROOT}/", f"{app}/"], check=True)
     subprocess.run(
         ["bash", "tools/init-project.sh", "newapp", "New App", "8123", "Does a thing."],
         cwd=app,
-        env=env,
+        env={**os.environ, "HOME": str(home)},
         check=True,
         capture_output=True,
     )
+    return app, home
 
+
+def test_init_project_renames_everything(made):
+    app, _ = made
     assert (app / "newapp" / "__init__.py").exists() and not (app / "hyprapp").exists()
     leftovers = subprocess.run(
         ["grep", "-rIl", "-e", "hyprapp", "-e", "Hyprapp", "--exclude-dir=.git", "."],
@@ -71,6 +62,10 @@ def test_init_project_produces_a_working_app(tmp_path):
     assert not (app / "tools" / "init-project.sh").exists()
     assert not (app / "docs" / "TEMPLATE.md").exists()
 
+
+def test_init_project_sets_up_git_and_the_memories(made):
+    app, home = made
+
     def git(*a):
         return subprocess.run(["git", *a], cwd=app, capture_output=True, text=True).stdout.strip()
 
@@ -78,9 +73,12 @@ def test_init_project_produces_a_working_app(tmp_path):
     exclude = (app / ".git" / "info" / "exclude").read_text()
     assert "CLAUDE.md" in exclude and ".claude/" in exclude
 
-    memories = list((tmp_path / "home" / ".claude" / "projects").glob("*/memory/MEMORY.md"))
+    memories = list((home / ".claude" / "projects").glob("*/memory/MEMORY.md"))
     assert memories, "the starter memories were not installed"
 
+
+def test_the_new_app_passes_its_suite(made):
+    app, _ = made
     # The browser tests run in the template's own suite; the new app's name
     # changes how its pages look, so its visual baselines start fresh.
     result = subprocess.run(
