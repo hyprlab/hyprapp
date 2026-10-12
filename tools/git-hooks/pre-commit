@@ -1,8 +1,11 @@
 #!/bin/sh
-# Runs the documentation check when Markdown is staged, and refuses to commit
-# CLAUDE.md, which is local only in an app (see docs/CONTRIBUTING.md,
-# "Commits"). An app is recognized as .claude/hooks/guard-bash.sh does it: by
-# init-project.sh's line in .git/info/exclude. The template tracks CLAUDE.md.
+# Before every commit, in under a second or two: refuse CLAUDE.md in an app,
+# then ruff (lint and format), the code checker and the documentation
+# checker. The full suite runs in CI and in tools/check.sh.
+#
+# CLAUDE.md is local only in an app (see docs/CONTRIBUTING.md, "Commits"). An
+# app is recognized as .claude/hooks/guard-bash.sh does it: by init-project.sh's
+# line in .git/info/exclude. The template tracks CLAUDE.md.
 set -e
 
 exclude="$(git rev-parse --git-path info/exclude)"
@@ -13,6 +16,17 @@ if [ -f "$exclude" ] && grep -qx 'CLAUDE.md' "$exclude" &&
     exit 1
 fi
 
-if git diff --cached --name-only --diff-filter=ACMR | grep -q '\.md$'; then
-    python3 tools/check-docs.py
+if [ -x .venv/bin/python ]; then py=.venv/bin/python; else py=python3; fi
+if [ -x .venv/bin/ruff ]; then ruff=.venv/bin/ruff; else ruff=$(command -v ruff || true); fi
+
+if git diff --cached --name-only --diff-filter=ACMR | grep -q '\.py$'; then
+    if [ -z "$ruff" ]; then
+        echo "pre-commit: ruff is not installed: .venv/bin/pip install -r requirements-dev.txt" >&2
+        exit 1
+    fi
+    "$ruff" check --quiet . || { echo "pre-commit: ruff check failed; try: $ruff check --fix ." >&2; exit 1; }
+    "$ruff" format --check --quiet . || { echo "pre-commit: not formatted; run: $ruff format ." >&2; exit 1; }
 fi
+
+"$py" tools/check-code.py >/dev/null
+"$py" tools/check-docs.py >/dev/null

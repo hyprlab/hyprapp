@@ -161,25 +161,28 @@ def duplicates(files: list[Path], window: int, focus: set[Path] | None) -> list[
     """Where the same `window` normalized lines appear twice: (path, line,
     other path, other line), one per pair of places. With focus, only pairs
     that involve one of those files."""
-    seen: dict[tuple, list[tuple[Path, int]]] = {}
+    seen: dict[tuple, list[tuple[Path, int, int]]] = {}
     for path in files:
         rows = normalized(path, TYPES[path.suffix])
         for i in range(len(rows) - window + 1):
             key = tuple(text for _, text in rows[i : i + window])
-            seen.setdefault(key, []).append((path, rows[i][0]))
-    found: list[tuple[Path, int, Path, int]] = []
-    for (path, line), *others in (places for places in seen.values() if len(places) > 1):
-        for other, other_line in others:
-            if path == other and abs(line - other_line) < window:
+            seen.setdefault(key, []).append((path, i, rows[i][0]))
+    found, regions = [], []
+    for (path, at, line), *others in (places for places in seen.values() if len(places) > 1):
+        for other, other_at, other_line in others:
+            # Overlapping windows of one block, counted in rows: CSS puts
+            # several declarations on a line.
+            if path == other and abs(at - other_at) < window:
                 continue
             if focus and not ({path, other} & focus):
                 continue
-            # One report per pair of files and region, not one per window.
+            # One report per pair of regions, not one per window.
             if any(
-                (p, o) == (path, other) and abs(a - line) <= window and abs(b - other_line) <= window
-                for p, a, o, b in found
+                (p, o) == (path, other) and abs(a - at) <= window and abs(b - other_at) <= window
+                for p, a, o, b in regions
             ):
                 continue
+            regions.append((path, at, other, other_at))
             found.append((path, line, other, other_line))
     return found
 
