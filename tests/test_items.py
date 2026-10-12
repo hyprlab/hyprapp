@@ -6,13 +6,13 @@ included, since the client shows them to people verbatim.
 """
 
 import re
+
 import pytest
 from werkzeug.exceptions import NotFound
 
 from hyprapp.models import Item, User, db
 
 from .conftest import make
-
 
 # ———— create ————
 

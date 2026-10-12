@@ -71,7 +71,9 @@ def test_init_project_produces_a_working_app(tmp_path):
     assert not (app / "tools" / "init-project.sh").exists()
     assert not (app / "docs" / "TEMPLATE.md").exists()
 
-    git = lambda *a: subprocess.run(["git", *a], cwd=app, capture_output=True, text=True).stdout.strip()
+    def git(*a):
+        return subprocess.run(["git", *a], cwd=app, capture_output=True, text=True).stdout.strip()
+
     assert git("config", "core.hooksPath") == "tools/git-hooks"
     exclude = (app / ".git" / "info" / "exclude").read_text()
     assert "CLAUDE.md" in exclude and ".claude/" in exclude

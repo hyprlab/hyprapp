@@ -119,7 +119,10 @@ class InlineThread:
 from hyprapp import config, create_app, worker
 from hyprapp.models import set_setting
 logged = []
-logging.getLogger().addHandler(type("H", (logging.Handler,), {"emit": lambda s, r: logged.append(r.getMessage())})())
+class Collect(logging.Handler):
+    def emit(self, record):
+        logged.append(record.getMessage())
+logging.getLogger().addHandler(Collect())
 
 def work():
     passes.append(1)

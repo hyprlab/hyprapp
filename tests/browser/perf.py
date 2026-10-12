@@ -48,7 +48,7 @@ def first_loads(browser, server, api) -> dict:
         page = context.new_page()
         page.add_init_script(FIRST_USE)
         responses = []
-        page.on("requestfinished", lambda request: responses.append(request))
+        page.on("requestfinished", responses.append)
         page.goto("/", wait_until="load")
         page.wait_for_function("window.__firstUse !== null")
         page.wait_for_load_state("networkidle")
@@ -62,7 +62,10 @@ def first_loads(browser, server, api) -> dict:
         timing["urls"] = sorted(r.url.replace(server.url, "").split("?")[0] for r in responses)
         samples.append(timing)
         context.close()
-    median = lambda key: round(statistics.median(s[key] for s in samples), 1)
+
+    def median(key):
+        return round(statistics.median(s[key] for s in samples), 1)
+
     return {
         "requests": samples[0]["requests"],
         "bytes": samples[0]["bytes"],

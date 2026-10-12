@@ -12,7 +12,6 @@ from flask import render_template_string
 import hyprapp
 from hyprapp.models import Item, Setting, User, db, get_setting, int_setting, set_setting, utcnow
 
-
 # ———— template globals and filters ————
 
 
@@ -155,7 +154,10 @@ def test_database_url_wins(config):
 
 def test_the_connection_pragmas(app):
     with app.app_context():
-        pragma = lambda name: db.session.execute(db.text(f"PRAGMA {name}")).scalar()
+
+        def pragma(name):
+            return db.session.execute(db.text(f"PRAGMA {name}")).scalar()
+
         assert pragma("journal_mode") == "wal"
         assert pragma("synchronous") == 1
         assert pragma("busy_timeout") == 5000

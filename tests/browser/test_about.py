@@ -56,7 +56,8 @@ def test_the_hero_animates_only_with_motion(new_page, api):
     pane = about(page)
     assert pane.locator(".about-hero-bg").evaluate("c => c.width") == 200
     page.wait_for_function(
-        "document.querySelector('.about-hero-bg').getContext('2d').getImageData(100, 60, 1, 1).data[3] === 255"
+        "document.querySelector('.about-hero-bg').getContext('2d')"
+        ".getImageData(100, 60, 1, 1).data[3] === 255"
     )
     still = new_page(api, reduced_motion="reduce")
     still.goto("/")

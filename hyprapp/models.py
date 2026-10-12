@@ -6,7 +6,7 @@ whole storage story (see docs/ARCHITECTURE.md).
 """
 
 import hashlib
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
@@ -23,7 +23,7 @@ VIEWS = ("cards", "list")
 def utcnow() -> datetime:
     """Naive UTC. SQLite has no timezone type, so everything stored is UTC and
     every comparison goes through this."""
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+    return datetime.now(UTC).replace(tzinfo=None)
 
 
 class User(UserMixin, db.Model):

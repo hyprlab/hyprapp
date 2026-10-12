@@ -12,7 +12,6 @@ from . import about_docs, icons
 from .models import utcnow
 from .security import csrf_token
 
-
 YEAR = 365 * 24 * 3600
 
 

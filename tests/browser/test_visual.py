@@ -14,13 +14,12 @@ import pytest
 from playwright.sync_api import expect
 
 from .conftest import DESKTOP, PHONE, Api, Server
+from .visual import compare
 
 # Between the breakpoints: 820px is past 1060 and 900, 640px past 700 too
 # but not 560, so a media query applied out of order shows up here.
 TABLET = {"width": 820, "height": 1000}
 SMALL = {"width": 640, "height": 900}
-from .visual import compare
-
 MASKS = [".settings-nav-version", ".about-version", ".release-list", "p:has(code)"]
 SECTIONS = ["appearance", "account", "admin", "security", "about"]
 RECORDS = [

@@ -11,12 +11,12 @@ import logging
 
 from flask import Flask
 
-from . import database  # noqa: F401  (its SQLite connection listeners register on import)
 from . import (
     account,
     admin,
     auth,
     cli,
+    database,
     errors,
     health,
     main,
@@ -51,6 +51,7 @@ def create_app(config_class=Config) -> Flask:
         hops = app.config["TRUST_PROXY"]
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=hops, x_proto=hops, x_host=hops)
 
+    database.init_app(app)
     db.init_app(app)
     auth.init_app(app)
     for blueprint in BLUEPRINTS:
