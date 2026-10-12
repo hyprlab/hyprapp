@@ -1,15 +1,15 @@
 """Checks on what a request sends, and refusing it in words.
 
-A JSON route calls refuse() or check(); the handler registered by
-register() turns the refusal into {"error": "..."} with its status, which the
-client shows as written. The sign-up form flashes the same texts instead, so
+A JSON route calls refuse() or check(); the handler errors.py registers turns
+the refusal into {"error": "..."} with its status, which the client shows as
+written. The sign-up form flashes the same texts instead, so
 the checks return the text rather than raising.
 """
 
 import re
 from typing import NoReturn
 
-from flask import Flask, jsonify, request
+from flask import request
 
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 MIN_PASSWORD = 8
@@ -33,10 +33,6 @@ def check(problem: str | None, status: int = 400) -> None:
     """Refuse with the problem's text, if there is one."""
     if problem:
         refuse(problem, status)
-
-
-def register(app: Flask) -> None:
-    app.register_error_handler(Refused, lambda err: (jsonify(error=err.message), err.status))
 
 
 def json_body() -> dict:

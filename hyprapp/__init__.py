@@ -16,7 +16,6 @@ from . import (
     admin,
     auth,
     cli,
-    database,
     errors,
     health,
     main,
@@ -25,7 +24,6 @@ from . import (
     setup,
     templating,
     turnstile,
-    validation,
     worker,
 )
 from .config import Config
@@ -51,7 +49,6 @@ def create_app(config_class=Config) -> Flask:
         hops = app.config["TRUST_PROXY"]
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=hops, x_proto=hops, x_host=hops)
 
-    database.init_app(app)
     db.init_app(app)
     auth.init_app(app)
     for blueprint in BLUEPRINTS:
@@ -62,7 +59,6 @@ def create_app(config_class=Config) -> Flask:
     setup.init_app(app)
     security.init_app(app)
     errors.init_app(app)
-    validation.register(app)
     templating.init_app(app, __version__)
 
     with app.app_context():

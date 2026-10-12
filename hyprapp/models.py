@@ -13,6 +13,8 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from . import database  # noqa: F401  (its SQLite connection listeners register on import)
+
 db = SQLAlchemy()
 
 

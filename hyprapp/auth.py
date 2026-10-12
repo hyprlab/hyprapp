@@ -8,11 +8,11 @@ rule (an app that started with plain usernames) can still sign in.
 import threading
 import time
 
-from flask import Blueprint, Flask, current_app, flash, jsonify, redirect, render_template, request, url_for
+from flask import Blueprint, Flask, current_app, flash, redirect, render_template, request, url_for
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
 
 from . import turnstile
-from .errors import wants_json
+from .errors import json_error, wants_json
 from .models import User, db, get_setting
 from .validation import clean_email, clean_name, email_problem, password_problem
 
@@ -68,7 +68,7 @@ def load_user(user_id):
 
 def unauthorized():
     if wants_json():
-        return jsonify(error="You are signed out. Reload the page to sign in again."), 401
+        return json_error("You are signed out. Reload the page to sign in again.", 401)
     return redirect(url_for("auth.login", next=request.full_path.rstrip("?")))
 
 

@@ -4,8 +4,10 @@ the response headers."""
 import secrets
 from functools import wraps
 
-from flask import Flask, abort, jsonify, request, session
+from flask import Flask, abort, request, session
 from flask_login import current_user, login_required
+
+from .errors import json_error
 
 
 def csrf_token() -> str:
@@ -22,7 +24,7 @@ def check_csrf():
     sent = request.headers.get("X-CSRF") or request.form.get("_csrf") or ""
     expected = session.get("_csrf", "")
     if not expected or not secrets.compare_digest(sent, expected):
-        return jsonify(error="Your session expired. Reload the page and try again."), 400
+        return json_error("Your session expired. Reload the page and try again.", 400)
     return None
 
 
