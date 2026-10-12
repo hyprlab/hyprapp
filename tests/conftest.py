@@ -27,7 +27,12 @@ def app(tmp_path, monkeypatch):
     class TestConfig(hyprapp.config.Config):
         TESTING = True
 
-    yield hyprapp.create_app(TestConfig)
+    app = hyprapp.create_app(TestConfig)
+    yield app
+    with app.app_context():
+        from hyprapp.models import db
+
+        db.engine.dispose()  # close its SQLite connections now, not at exit
 
 
 def make(post, title="Record", **extra) -> dict:

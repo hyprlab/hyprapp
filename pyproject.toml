@@ -2,6 +2,10 @@
 markers = [
     "browser: drives the app in Chromium with Playwright (tests/browser)",
 ]
+filterwarnings = [
+    # Flask-Login 0.6.3 calls datetime.utcnow(); not ours to fix.
+    "ignore:datetime.datetime.utcnow:DeprecationWarning:flask_login",
+]
 
 [tool.ruff]
 target-version = "py312"
