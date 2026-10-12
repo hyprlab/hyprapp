@@ -1,6 +1,6 @@
 ---
 name: flask-stack
-description: "House Flask architecture decisions: app factory; gunicorn 1 worker + threads (background thread starts once, SQLite single writer); SQLite WAL; _migrate() guarded ALTER TABLE, no framework; session CSRF via X-CSRF; runtime settings table overrides env defaults; first account is admin; email usernames"
+description: "House Flask architecture decisions: app factory; gunicorn 1 worker + threads (background thread starts once, SQLite single writer); SQLite WAL; migrate() in migrations.py, guarded ALTER TABLE, no framework; session CSRF via X-CSRF; runtime settings table overrides env defaults; first account is admin; email usernames"
 metadata:
   type: project
 ---
@@ -13,10 +13,13 @@ reasoning):
   thread must start once, and SQLite prefers one writing process. If work
   outgrows that, move it to its own container.
 - SQLite pragmas: WAL, `busy_timeout=5000`, `foreign_keys=ON`.
-- **Schema changes go in `_migrate()`** in `__init__.py`: `ALTER TABLE`
-  guarded by a column check, safe to run twice. New steps at the end; never
-  edit an old one. A step an older version can't read back is MAJOR
-  ([[semver-strict]]).
+- **Schema changes go in `migrate()`** in `migrations.py`: `ALTER TABLE`
+  guarded by a column check, safe to run twice. New steps at the end, inside
+  the `fmt: off` fence; never edit an old one. A step an older version can't
+  read back is MAJOR ([[semver-strict]]).
+- **One module per concern** (see CLAUDE.md "Where code goes"): the factory
+  in `__init__.py` only wires them; admin routes use `@admin_required`;
+  validation texts live once in `validation.py` ([[code-shape]]).
 - Hand-rolled session CSRF: hidden `_csrf` in forms, `X-CSRF` header from
   `fetch`. JSON routes return `{"error": "..."}` written for a person.
 - **Two kinds of setting:** env vars are fresh-install defaults; admin-edited

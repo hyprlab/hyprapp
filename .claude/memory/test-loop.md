@@ -5,9 +5,11 @@ metadata:
   type: feedback
 ---
 
-**Standing order:** after every code change, run the tests and rebuild and
-restart the local container (`tools/redeploy.sh`) without being asked, so
-Jason can try it immediately. It publishes nothing ([[no-publish-until-asked]]).
+**Standing order:** after every code change, run the checks
+(`tools/check.sh --fast` while working, the full `tools/check.sh` before
+saying it's done: it adds the browser suite with its visual comparison and
+the image build) and rebuild and restart the local container
+(`tools/redeploy.sh`) without being asked, so Jason can try it immediately. It publishes nothing ([[no-publish-until-asked]]).
 Exception: he says otherwise, or a restart would lose someone's in-progress
 state; then say the build is ready and let him swap it.
 

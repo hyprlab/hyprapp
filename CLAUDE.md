@@ -10,9 +10,9 @@ repository is the one exception, because they are part of what gets copied.
 ## What this is
 
 A Flask app in one Docker container, SQLite in one volume, server-rendered
-Jinja, one dependency-free `app.js`, hand-written `app.css`. Gunicorn runs one
-worker with eight threads on purpose (the background thread starts once;
-SQLite wants one writer). The design system is Hyprfeed's; see
+Jinja, native JavaScript modules with no build step and no dependencies, and
+hand-written stylesheets. Gunicorn runs one worker with eight threads on
+purpose (the background thread starts once; SQLite wants one writer). The design system is Hyprfeed's; see
 [docs/DESIGN.md](docs/DESIGN.md) before adding UI, and reuse its components
 rather than inventing new ones.
 
@@ -35,13 +35,24 @@ rather than inventing new ones.
 - **After every code change, rebuild and restart the local container**
   (`tools/redeploy.sh`) so it can be tried at once, unless told otherwise. It
   publishes nothing.
-- **Test before claiming.** `pytest` before committing; rebuild and load the
-  page before saying something works. To see the UI, drive the running app
+- **Test before claiming.** `tools/check.sh --fast` before committing, the
+  full `tools/check.sh` (browser suite and image included) before saying
+  something is done; rebuild and load the page before saying something works. To see the UI, drive the running app
   with Playwright (the T3 preview tools have timed out on this machine), and
   write every screenshot to a fresh filename: an image re-read at the same
   path shows the old picture.
 - **Kill processes by PID**, never `pkill -f <pattern>`: the pattern matches
   the tool's own shell and kills it.
+- **Reuse before writing.** Look for the helper before writing a second copy
+  of anything; on the second use of a pattern, extract it. "Where code goes"
+  below says where the helper belongs.
+- **Keep the shape.** No file over its budget (300 lines of Python, JavaScript
+  or CSS, 200 of a template), no function over 50 lines or complexity 10, no
+  block repeated in two places. A file near its budget is split by concern,
+  never by line number. The budgets live in `pyproject.toml`
+  (`[tool.hyprapp.checks]`); raising one, or adding an exception, is a visible
+  edit with its reason. `tools/check-code.py` enforces them after every edit,
+  in the pre-commit hook and in CI.
 
 ## Commits
 
@@ -111,27 +122,50 @@ numbered list. Beta fixes: name the beta and say it reaches stable with the
 next weekly release; close the issue when that stable ships. Reply after the
 image is pushed.
 
+## Where code goes
+
+| A change | Goes in |
+| --- | --- |
+| A route | The blueprint for its concern: `main.py` (the home page and the worked example), `account.py`, `admin.py`, `auth.py`, `setup.py`, `turnstile.py`, `health.py`. A new blueprint joins `BLUEPRINTS` in `__init__.py`; a new route, `tests/snapshots/routes.txt` |
+| A model or a column | `models.py`; a column on an existing table also needs a migration step |
+| A migration step | The end of `migrate()` in `migrations.py`, inside its `fmt: off` fence |
+| A validation rule or refusal | `validation.py` when more than one route checks it; the route's module otherwise |
+| A per-user setting | See "Code" below; `infinite_scroll` is the worked example |
+| An admin setting | `INSTANCE_SETTINGS` in `admin.py` (see "Code" below) |
+| A settings section | A row in `settings_sections` in `partials/settings.html`, and `partials/settings/<id>.html` |
+| A dialog | A partial in `templates/partials/`, included by `app.html`; its behavior in its JavaScript module |
+| An icon | `icons.py`, drawn with `{{ icon("name") }}` |
+| A JavaScript feature | One module in `static/js/` that guards on its own elements, imported by `app.js` |
+| A style | The stylesheet for its part: `tokens`, `base`, `layout`, `records`, `overlays`, `settings`, `pages` (linked in that order) |
+| A template global or filter | `templating.py` |
+| A request guard or header | `security.py`; error pages in `errors.py` |
+| Periodic work | `_work()` in `worker.py` |
+| A command | `cli.py` |
+| A test | `tests/test_<concern>.py`; behavior in the browser in `tests/browser/`; a deliberate new look, `UPDATE_BASELINES=1` and commit the screenshots |
+
 ## Code
 
-- Schema changes: a new guarded step at the end of `_migrate()`. Never edit an
-  old step.
-- New per-user preference: a `User` column, a `_migrate()` step, a branch in
-  `main.settings`, a control in the settings modal, a listener in `app.js`.
-  `infinite_scroll` is the worked example.
-- New settings section: a row in `settings_sections` at the top of the
-  settings window in `app.html` (id, label, group, icon) and a
-  `settings-pane` with the same id. The rail, header and phone list follow.
-- New admin setting: add it to `INSTANCE_SETTINGS` in `main.py`, read it with
-  `int_setting()`, add the field to the Admin section and its id to the list in
-  `app.js`.
-- JSON routes return `{"error": "..."}` written for a person; the client shows
-  it verbatim.
+- Schema changes: a new guarded step at the end of `migrate()` in
+  `migrations.py`, inside its `fmt: off` fence. Never edit an old step.
+- New per-user preference: a `User` column, a migration step, a branch in
+  `account.settings`, a control in its settings pane (`partials/settings/`),
+  a listener in the feature's module in `static/js/` (`infinite_scroll`'s is
+  in `paging.js`).
+- New settings section: a row in `settings_sections` at the top of
+  `partials/settings.html` (id, label, group, icon) and its pane in
+  `partials/settings/<id>.html`. The rail, header, panes and phone list follow.
+- New admin setting: add it to `INSTANCE_SETTINGS` in `admin.py`, read it with
+  `int_setting()`, add the field to `partials/settings/admin.html` and its id
+  to the list in `static/js/admin.js`.
+- JSON routes refuse with `refuse()` or `check()` from `validation.py`, which
+  answer `{"error": "..."}` written for a person; the client shows it verbatim.
 - User text is escaped (`{{ }}`, `textContent`). Foreign HTML goes through
   `sanitize_html()` first.
 - Dialogs come back after a reload by default. A new `<dialog>` needs an
-  `id`; if it holds state worth keeping (a draft, a position), add a
-  save/restore pair to `dialogMemory` in `app.js`; if it must never come back,
-  `data-restore="off"`. Close a dialog before a `reloadWith()` that it
-  caused, or it reopens (the record form does this after saving).
+  `id`; if it holds state worth keeping (a draft, a position), its module
+  registers `remember(id, {save, restore})` from `restore.js`; if it must
+  never come back, `data-restore="off"`. Close a dialog before a
+  `reloadWith()` that it caused, or it reopens (the record form does this
+  after saving).
 - Errors are always shown; success toasts only when the result isn't visible
   already. Undo instead of "Are you sure?" where the action is recoverable.

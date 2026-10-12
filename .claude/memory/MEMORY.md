@@ -12,8 +12,9 @@
 - [Issue replies](issue-replies.md) — "*Agentic reply:*", 1-2 sentences, no thanks, numbered asks
 - [Contributor credit](contributor-credit.md) — noreply Co-Authored-By; @ only for code/art/translation contributors
 - [Prose style](prose-style.md) — factual, no marketing or emoji, American spelling, docs shape, check-docs
+- [Code shape](code-shape.md) — STANDING RULE: reuse before writing, split by concern, budgets in pyproject.toml, tools/check.sh before done
 - [Test loop](test-loop.md) — after every change: pytest + tools/redeploy.sh; Playwright; kill by PID
 - [House hosting](house-hosting.md) — host 8000 is Portainer; apps map 8090+ -> 8000 (809x full, new apps 8100+); Docker Hub hyprlab/<app>
 - [Design system](design-system.md) — Hyprfeed's UI: Inter, scarce accent, sidebar shell, fixed-height settings
-- [Flask stack](flask-stack.md) — 1 gunicorn worker + threads, SQLite WAL, _migrate(), session CSRF, first account is admin
+- [Flask stack](flask-stack.md) — 1 gunicorn worker + threads, SQLite WAL, migrate() steps, session CSRF, first account is admin
 - [Template origin](template-origin.md) — started from the template at @TEMPLATE_DIR@; offer generic improvements back

@@ -6,15 +6,17 @@ metadata:
 ---
 
 The interface every Hyprlab Flask app starts from, taken from Hyprfeed and
-kept in `static/css/app.css`. Full reference: docs/DESIGN.md.
+kept in the stylesheets in `static/css/` (tokens, base, layout, records,
+overlays, settings, pages, linked in that order). Full reference:
+docs/DESIGN.md.
 
 Decisions to preserve when editing:
 - **Inter Variable only**, embedded woff2 in `static/fonts`; no external
   requests (Turnstile is the one exception, when enabled).
 - **One accent, spent sparingly:** the brand mark, new-item markers, and
   active states. Rebrand by changing `--accent`, `--accent-ink`,
-  `--accent-glow` in both themes and the mark in `partials/mark.html` +
-  `static/img/logo.svg`. Nothing else hardcodes a brand color.
+  `--accent-glow` and `--wash` in both themes (`static/css/tokens.css`) and
+  the mark in `partials/mark.html` + `static/img/logo.svg`.
 - Light and dark via `data-theme` on `<html>`, resolved by an inline `<head>`
   script before first paint; the preference is a column on the user.
 - **The shell:** sidebar with pinned head and foot (only the middle scrolls),
@@ -32,14 +34,15 @@ Decisions to preserve when editing:
   the dialog's box, and only when the press also started outside.
 - `html:has(dialog[open]) { overflow: hidden }` keeps the page from scrolling
   behind any dialog.
-- No frontend framework, no build step; hand-written CSS and one `app.js`.
+- No frontend framework, no build step; hand-written CSS and native ES
+  modules in `static/js/`, versioned by an import map ([[code-shape]]).
 
 - **A reload keeps your place** (Jason, 2026-09-24, "default behavior"):
   the open dialog comes back after a refresh with its state (settings
   section + scroll, record draft, search query, the open record). Generic
-  in app.js ("Dialogs survive a reload"): every `<dialog id>` by default,
-  `dialogMemory` for state, `data-restore="off"` to opt out; only on a
-  reload (Navigation Timing type), sessionStorage per tab.
+  in `static/js/restore.js`: every `<dialog id>` by default, a module's
+  `remember(id, {save, restore})` for state, `data-restore="off"` to opt out;
+  only on a reload (Navigation Timing type), sessionStorage per tab.
 
 **Interface rules (from Hylki and Hyprfeed):** errors are always shown; a
 success toast only when the result isn't already visible. Undo instead of
