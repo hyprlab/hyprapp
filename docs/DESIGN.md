@@ -1,8 +1,13 @@
 # Design system
 
 The interface comes from Hyprfeed's "electric editorial" design: Inter
-everywhere, true neutral greys, and one accent color spent sparingly. Everything is
-in `static/css/app.css`, hand-written, in the order this page follows.
+everywhere, true neutral greys, and one accent color spent sparingly. It is
+hand-written in the stylesheets in `static/css/`, linked in a fixed order:
+`tokens` (the fonts and every token), `base` (the reset, type, icons and
+controls), `layout` (the shell), `records`, `overlays` (dialogs, the palette,
+the sheet, toasts), `settings` and `pages` (sign-in, setup, errors). Each
+file's rules may override the ones before it. Icons are inline SVG, drawn by
+`{{ icon("name") }}` from `icons.py`.
 
 ## Principles
 
@@ -39,8 +44,10 @@ Set on `:root` and per theme on `html[data-theme="light"|"dark"]`.
 | `--shadow-1`, `--shadow-2` | Resting and raised |
 | `--sidebar-w`, `--topbar-h` | Shell dimensions |
 
-To rebrand, change the three accent tokens in both themes (the dark theme uses
-a slightly different accent for contrast) and redraw the mark.
+To rebrand, change the accent tokens in `tokens.css`, in both themes (the dark
+theme uses a slightly different accent for contrast): `--accent`,
+`--accent-ink`, `--accent-glow`, and `--wash`, which is the accent at low
+opacity. Then redraw the mark.
 
 ## Type
 
@@ -93,8 +100,9 @@ Long-form text uses `.prose` at 16.5px and 1.72.
   open, as it was: the settings section and its scroll, a half-typed record,
   the search query. Every `<dialog>` gets this by default (one with nothing to
   remember simply reopens); `data-restore="off"` opts one out, and a dialog
-  with state adds a save/restore pair to `dialogMemory` in `app.js`. Only a
-  reload restores; arriving at the page any other way starts clean.
+  with state registers `remember(id, {save, restore})` from `restore.js` in
+  its module. Only a reload restores; arriving at the page any other way
+  starts clean.
 - **Keyboard first.** Every action in the sheet has a key, the palette opens
   from anywhere, and focus is always visible (`:focus-visible` draws the
   accent outline).

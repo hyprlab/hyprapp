@@ -16,7 +16,10 @@ The script:
 2. Sets the host port in `docker-compose.yml`.
 3. Resets `__version__` to `0.1.0` and writes a fresh `CHANGELOG.md` and a
    README skeleton in the house shape.
-4. Deletes this file, `tests/test_template.py` and itself.
+4. Deletes this file, `tests/test_template.py`, the visual baselines (they
+   show the template's name; the app's first browser run writes its own) and
+   itself, then reformats with ruff if it is installed, since the new name
+   changes line lengths.
 5. Runs `git init -b main` and sets `core.hooksPath tools/git-hooks`, so the
    commit rules hold from the first commit.
 6. Lists `CLAUDE.md` and `.claude/` in `.git/info/exclude`, so the app's
@@ -46,9 +49,10 @@ they are part of what gets copied.
 | --- | --- |
 | `README.md` | Fill in the skeleton. It is the front door and has a 200-line ceiling. |
 | `<pkg>/static/img/logo.svg` and `templates/partials/mark.html` | The brand mark, in both places, with the same path |
-| `<pkg>/static/css/app.css` | `--accent`, `--accent-ink` and `--accent-glow`, in both themes, if the app gets its own color |
-| `<pkg>/models.py` | Replace `Item` with the app's own model |
-| `<pkg>/worker.py` | The periodic work, or delete it and set `WORKER_MINUTES=0` |
+| `<pkg>/static/css/tokens.css` | `--accent`, `--accent-ink`, `--accent-glow` and `--wash`, in both themes, if the app gets its own color |
+| `<pkg>/models.py` | Replace `Item` with the app's own model (see "The worked example" below) |
+| `<pkg>/worker.py` | `_work()`, the periodic work, or delete the worker and set `WORKER_MINUTES=0` |
+| `tests/browser/baselines/` | Written by the first `tools/check.sh`; look at them and commit them |
 | `<pkg>/config.py`, `SOURCE_URL` | The repository the About section links to (already `hyprlab/<pkg>`) |
 | `docs/` | Written generically; adjust as the app takes shape |
 
@@ -56,30 +60,39 @@ they are part of what gets copied.
 
 The parts that are the same in every app and not worth rebuilding:
 
-- **The app factory**: CSRF, the setup gate, security headers, JSON-or-page
-  errors, SQLite pragmas, `static_url`, the `ago` filter, `_migrate()` and the
-  worker thread.
-- **`auth.py`, `setup.py`, `cli.py`** and the account and admin halves of
-  `main.py`.
-- **`static/css/app.css`** and the shell in `templates/app.html`: the design
-  system ([DESIGN.md](DESIGN.md)).
-- **`static/js/app.js`**: the API helper, toasts with Undo, the theme switch,
-  the dialog handling (the backdrop-click detection is subtle and was hard won),
-  settings, menus, the palette, paging and pull to refresh.
+- **The app factory and what it wires together**: `security.py` (CSRF, the
+  admin check, headers), `setup.py` (the wizard and its gate), `errors.py`
+  (JSON or a page), `database.py` (the SQLite pragmas), `templating.py`
+  (`static_url`, the module import map, `icon()`, the `ago` filter),
+  `migrations.py`, `validation.py` and `worker.py`.
+- **`auth.py`, `account.py`, `admin.py`, `cli.py`**: accounts, preferences,
+  the admin panel and the commands.
+- **The stylesheets** in `static/css/` and the shell in `templates/app.html`
+  and `templates/partials/`: the design system ([DESIGN.md](DESIGN.md)).
+- **The JavaScript modules** in `static/js/`: `api.js`, toasts with Undo, the
+  theme switch, the dialog handling in `dialogs.js` and `restore.js` (the
+  backdrop-click detection is subtle and was hard won), settings, menus, the
+  palette, paging and pull to refresh.
 - **`about_docs.py`**: the About section renders `CHANGELOG.md`, so a release shows
   in the app with no second file to keep.
-- **`tools/`, `tests/`, `.github/`, `.claude/`** and every doc in `docs/`
-  except this one.
+- **`tools/`, `tests/`, `.github/`, `.claude/`**, the checks and their budgets
+  in `pyproject.toml`, and every doc in `docs/` except this one.
 
 ## What to delete when it is not needed
 
-- `worker.py` and the `_start_worker` call, if there is no periodic work.
+- The worker: `worker.py`'s `_work()` can stay empty with `WORKER_MINUTES=0`;
+  to remove it, delete `worker.py` and the `worker.start(app)` call in
+  `create_app()`.
 - `sanitize.py`, if the app never renders HTML it did not write.
-- Turnstile (the Security section, its routes in `main.py`, the helpers in
-  `auth.py` and the blocks in the auth templates), if the app will never face
-  the public internet. Leaving it is harmless: it is off until turned on.
-- The pull-to-refresh block in `app.js` and the `#ptr` element, if a reload
-  would lose state.
+- Turnstile, if the app will never face the public internet: `turnstile.py`
+  and its blueprint in `__init__.py`, the two `turnstile.verify_form()` calls
+  in `auth.py`, its context value in `templating.py`, `static/js/turnstile.js`
+  and its import in `app.js`, the Security row in `partials/settings.html` with
+  `partials/settings/security.html`, the blocks in `auth/form.html`, and its
+  tests. Leaving it is harmless: it is off until turned on.
+- Pull to refresh, if a reload would lose state: `static/js/pull-to-refresh.js`
+  and its import in `app.js`, the `#ptr` element in `app.html`, and its rules in
+  `overlays.css`.
 
 ## The worked example
 
@@ -97,5 +110,16 @@ body, pinned flag and done flag between them exercise:
   re-rendering the list through the same Jinja partial
 - one form for create and edit
 
-Replacing it means a new model, new routes in `main.py`, a new
-`partials/records.html`, and the matching tests. Keep the shapes.
+It lives in as few places as possible, so replacing it is replacing these and
+keeping the shapes:
+
+| | |
+| --- | --- |
+| `<pkg>/models.py` | `Item` (and `VIEWS`, if the views change) |
+| `<pkg>/main.py` | The home page (`main.index`, which stays the home page's name) and the records API |
+| `templates/partials/records.html` | The list, rendered for a page load and for `?partial=1` |
+| `templates/partials/record_form.html`, `sheet.html`, `sidebar.html` | The form, the detail sheet, and the sidebar's filters |
+| `static/js/records.js`, `record-form.js`, `sheet.js` | The list, the form and the sheet in the browser |
+| `static/css/records.css` | Cards, rows, empty states and the pager |
+| `admin.py`'s `pane_context()` | The record counts in the Admin section |
+| `tests/test_items.py`, `test_listing.py`, `tests/browser/test_records.py`, `test_sheet.py` | Their tests, with `tests/snapshots/routes.txt` for the routes |

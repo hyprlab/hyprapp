@@ -29,8 +29,12 @@
 - **The release machinery**: strict SemVer read from Conventional Commits, beta
   and stable channels, the changelog shown in the About section, commit hooks that
   keep AI attribution out of the history, and a documentation checker
-- **Claude Code set up**: `CLAUDE.md`, project settings with guard hooks, ship
-  skills for both channels, and starter memories
+- **Checks that keep the code's shape**: ruff, budgets for the size of files and
+  functions, a duplicate finder, a coverage floor, and a browser suite with a
+  visual comparison, run by one command (`tools/check.sh`), the commit hook and CI
+- **Claude Code set up**: `CLAUDE.md`, project settings with guard hooks and a
+  check of each edited file, ship skills for both channels, a tidy skill, and
+  starter memories
 
 ## Starting a new app
 
@@ -44,7 +48,8 @@ hooks enabled, and installs the memories. Then:
 
 ```sh
 python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
-.venv/bin/python -m pytest
+.venv/bin/python -m playwright install chromium
+tools/check.sh                     # everything CI checks
 tools/redeploy.sh                  # builds and runs the container
 ```
 

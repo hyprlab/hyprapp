@@ -1,6 +1,6 @@
 """Database models.
 
-Schema changes go through ``_migrate()`` in ``__init__.py``: ``ALTER TABLE``
+Schema changes go through ``migrate()`` in ``migrations.py``: ``ALTER TABLE``
 guarded by a column check, no migration framework. SQLite in one volume is the
 whole storage story (see docs/ARCHITECTURE.md).
 """

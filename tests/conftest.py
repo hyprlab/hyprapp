@@ -55,7 +55,7 @@ def csrf(client):
 
 @pytest.fixture()
 def post(client, csrf):
-    """POST a JSON body with the session's CSRF header, the way app.js does."""
+    """POST a JSON body with the session's CSRF header, the way api.js does."""
 
     def send(url, body=None):
         return client.post(url, json=body if body is not None else {}, headers={"X-CSRF": csrf})

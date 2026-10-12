@@ -8,17 +8,54 @@ often as useful as a patch.
 
 ```sh
 python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
-git config core.hooksPath tools/git-hooks     # once per clone or worktree
-.venv/bin/python -m pytest
-.venv/bin/python run.py                       # http://localhost:8000
+.venv/bin/python -m playwright install chromium   # for the browser tests
+git config core.hooksPath tools/git-hooks         # once per clone or worktree
+tools/check.sh                                    # everything CI checks
+.venv/bin/python run.py                           # http://localhost:8000
 ```
 
-The hooks enforce the commit rules below and run the documentation check.
-Without `core.hooksPath` they silently do nothing, so set it in every clone
-and every worktree.
+The hooks enforce the commit rules below and run the quick checks before
+every commit. Without `core.hooksPath` they silently do nothing, so set it in
+every clone and every worktree.
 
 To try a change the way it will run in production, rebuild the container:
 `tools/redeploy.sh`.
+
+## Checks
+
+`tools/check.sh` runs what CI runs, in the same order, so passing locally and
+passing in CI mean the same thing. `--fast` leaves out the browser and Docker;
+a stage can be run alone (`tools/check.sh static`).
+
+| Stage | What it runs |
+| --- | --- |
+| `static` | `ruff check`, `ruff format --check`, `tools/check-code.py`, `tools/check-docs.py`, and the commit message hook over the commits not yet on `main` |
+| `tests` | `pytest` without the browser, with the coverage floor |
+| `browser` | The Playwright suite in `tests/browser`, the visual comparison included |
+| `image` | `docker build` |
+
+The pre-commit hook runs the `static` checks but the commit messages, in
+under a second. Claude Code runs `tools/check-code.py` on every file it edits.
+
+**The budgets** are in `pyproject.toml` under `[tool.hyprapp.checks]`: no file
+over 300 lines of Python, JavaScript or CSS or 200 of a template; no function
+over 50 lines or complexity 10; no block of 6 lines repeated in two places;
+every JavaScript import names something its module exports. A file near its
+budget is split by concern, not by line number. Raising a budget, or adding
+an exception, is an edit to that table with its reason, made in the open;
+never a skip in the code.
+
+**The coverage floor** is `fail_under` in `pyproject.toml`. It only goes up:
+when coverage rises, raise the floor to the new figure, rounded down; when a
+change would lower it, test the change instead.
+
+**The visual comparison** checks screenshots of every page and settings
+section, at four widths in both themes, against `tests/browser/baselines/`.
+When a change is meant to change the look, run
+`UPDATE_BASELINES=1 .venv/bin/python -m pytest tests/browser/test_visual.py`,
+look at the new screenshots, and commit them with the change. A failure
+writes the new screenshot and a diff to `tests/browser/visual-diffs/`, which
+CI uploads.
 
 ## Commits
 
@@ -96,15 +133,20 @@ renders the changelog, so a skipped section is a gap users see.
 
 ## Code
 
-- Match what is there: the app factory, blueprints, the `{"error": "..."}`
-  shape for JSON failures, `api()` in `app.js` for every mutating call.
-- Schema changes go in `_migrate()` as guarded `ALTER TABLE` steps. Never edit
-  an old step. A step an older version can't read back is a MAJOR release.
+- Match what is there: one module per concern (CLAUDE.md's "Where code goes"
+  table has the map), blueprints, `refuse()` for the `{"error": "..."}` shape
+  of JSON failures, `api()` from `static/js/api.js` for every mutating call.
+- Reuse before writing: look for the helper before writing a second copy, and
+  extract one on the second use of a pattern.
+- Schema changes go in `migrate()` in `migrations.py` as guarded `ALTER TABLE`
+  steps. Never edit an old step. A step an older version can't read back is a
+  MAJOR release.
 - Anything the user typed is rendered with Jinja's escaping or `textContent`,
   never `|safe` or `innerHTML`. Foreign HTML goes through
   `sanitize.sanitize_html()` first.
 - User-facing failures say what happened and what to do, in a sentence.
-- Tests before committing (`pytest`), and rebuild and run the app
+- Checks before committing (`tools/check.sh --fast`), the full
+  `tools/check.sh` before calling a change done, and rebuild and run the app
   (`tools/redeploy.sh`) before saying something works.
 
 ## Credit

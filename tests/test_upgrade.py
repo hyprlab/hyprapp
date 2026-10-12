@@ -57,7 +57,7 @@ def columns(db_file: Path) -> dict[str, list[tuple]]:
 
 def test_every_row_survives_two_boots(installed):
     boot(installed)
-    app = boot(installed)  # _migrate() runs at every boot; the second must be a no-op
+    app = boot(installed)  # migrate() runs at every boot; the second must be a no-op
     db_file = installed / "hyprapp.db"
     assert rows(
         db_file,
