@@ -6,12 +6,30 @@ import ast
 import re
 from pathlib import Path
 
-TYPES = {".py": "py", ".js": "js", ".css": "css", ".html": "html"}
+TYPES = {
+    ".py": "py",
+    ".js": "js",
+    ".mjs": "js",
+    ".css": "css",
+    ".html": "html",
+    ".jinja": "html",
+    ".j2": "html",
+    ".sh": "sh",
+}
 
 
 def functions_in(path: Path) -> list[tuple[str, int, int, int]]:
-    """(name, line, length, complexity) for each function in a .py or .js file."""
-    return python_functions(path) if path.suffix == ".py" else js_functions(path)
+    """(name, line, length, complexity) for each function in a Python or
+    JavaScript file, or in a template's inline scripts."""
+    kind = TYPES.get(path.suffix)
+    if kind == "py":
+        return python_functions(path)
+    text = path.read_text(encoding="utf-8")
+    if kind == "js":
+        return js_functions(text)
+    if kind == "html":
+        return [f for line, body in inline_scripts(text) for f in js_functions(body, line - 1)]
+    return []
 
 
 # ———— Python functions ————
@@ -45,11 +63,17 @@ def python_functions(path: Path) -> list[tuple[str, int, int, int]]:
 
 # ———— JavaScript functions ————
 
+# Parameters, with one level of parentheses inside: f(a = make()) {.
+PARAMS = r"\((?:[^()]|\([^()]*\))*\)"
 JS_START = re.compile(
-    r"function\s*\*?\s*(?P<named>[\w$]*)\s*\([^)]*\)\s*\{"  # function f() {  function () {
-    r"|^[ \t]*(?:async\s+)?(?P<method>[\w$]+)\s*\([^()]*\)\s*\{"  # method() {, at a line's start
-    r"|(?P<arrow>\([^()]*\)|[\w$]+)\s*=>\s*\{",  # (a) => {   a => {
+    rf"function\s*\*?\s*(?P<named>[\w$]*)\s*{PARAMS}\s*\{{"  # function f() {  function () {
+    rf"|^[ \t]*(?:(?:static|async|get|set)\s+)*\*?(?P<method>[\w$]+)\s*{PARAMS}\s*\{{"  # method() {
+    rf"|(?P<arrow>{PARAMS}|[\w$]+)\s*=>\s*\{{",  # (a) => {   a => {
     re.M,
+)
+# A template's own scripts: not ones loaded by src, nor JSON such as the import map.
+INLINE_SCRIPT = re.compile(
+    r"<script(?![^>]*\bsrc=)(?![^>]*\btype=\"(?:importmap|application/json)\")[^>]*>(.*?)</script>", re.S
 )
 JS_KEYWORDS = {"if", "for", "while", "switch", "catch", "function", "return", "with"}
 JS_DECISIONS = re.compile(r"\b(?:if|for|while|case|catch)\b|&&|\|\||\?\?|\?(?![.?])")
@@ -89,8 +113,13 @@ def js_mask(text: str) -> str:
     return "".join(out)
 
 
-def js_functions(path: Path) -> list[tuple[str, int, int, int]]:
-    masked = js_mask(path.read_text(encoding="utf-8"))
+def inline_scripts(html: str) -> list[tuple[int, str]]:
+    """(line, body) of each inline script in a template."""
+    return [(html.count("\n", 0, m.start(1)) + 1, m.group(1)) for m in INLINE_SCRIPT.finditer(html)]
+
+
+def js_functions(text: str, line_offset: int = 0) -> list[tuple[str, int, int, int]]:
+    masked = js_mask(text)
     spans = []
     for match in JS_START.finditer(masked):
         if match.group("method") in JS_KEYWORDS:
@@ -115,7 +144,7 @@ def js_functions(path: Path) -> list[tuple[str, int, int, int]]:
         for _, s2, e2 in spans:
             if start < s2 and e2 <= end:
                 body = body.replace(masked[s2:e2], " " * (e2 - s2), 1)
-        line = masked.count("\n", 0, start) + 1
+        line = masked.count("\n", 0, start) + 1 + line_offset
         length = masked.count("\n", start, end) + 1
         found.append((name, line, length, 1 + len(JS_DECISIONS.findall(body))))
     return found
@@ -127,6 +156,7 @@ IMPORT_OPEN = re.compile(r"^(?:from \S+ )?import \($")
 TRIVIAL = re.compile(r"^[\s)\]}>;,{(\[]*$|^(?:import|from)\s|^</\w+>$|^\{%-?\s*end\w*\s*-?%\}$")
 COMMENT = {
     "py": re.compile(r"^#"),
+    "sh": re.compile(r"^#"),
     "js": re.compile(r"^(//|/?\*)"),
     "html": re.compile(r"^(\{#.*#\}|<!--.*-->)$"),
     "css": re.compile(r"^/?\*"),

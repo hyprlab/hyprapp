@@ -19,7 +19,8 @@ fi
 if [ -x .venv/bin/python ]; then py=.venv/bin/python; else py=python3; fi
 if [ -x .venv/bin/ruff ]; then ruff=.venv/bin/ruff; else ruff=$(command -v ruff || true); fi
 
-if git diff --cached --name-only --diff-filter=ACMR | grep -q '\.py$'; then
+# Python, or the file that configures ruff.
+if git diff --cached --name-only --diff-filter=ACMR | grep -qE '\.py$|^pyproject\.toml$'; then
     if [ -z "$ruff" ]; then
         echo "pre-commit: ruff is not installed: .venv/bin/pip install -r requirements-dev.txt" >&2
         exit 1

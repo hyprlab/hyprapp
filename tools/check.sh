@@ -13,6 +13,7 @@
 # CI runs each stage in its own job (.github/workflows/ci.yml) by calling this
 # script, so a check is defined here once. CHECK_BASE is the commit the
 # message check starts from; it defaults to origin/main, else main.
+# Stages run in order and stop at the first that fails.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -24,7 +25,8 @@ step() { printf '\n==> %s\n' "$*"; }
 
 commit_messages() {
     local base="${CHECK_BASE:-}" status=0
-    if [ -z "$base" ]; then
+    # A push that creates a branch reports a base of all zeros.
+    if [ -z "$base" ] || [ -z "${base//0/}" ]; then
         base=$(git rev-parse -q --verify origin/main || git rev-parse -q --verify main || true)
     fi
     [ -n "$base" ] || { echo "no base to compare with; skipped"; return 0; }
@@ -54,6 +56,12 @@ tests() {
 
 browser() {
     step "browser suite, with the visual comparison"
+    # The suite skips itself without Playwright; here that is a failure.
+    "$py" -c "import playwright.sync_api" 2>/dev/null || {
+        echo "Playwright is not installed: pip install -r requirements-dev.txt," >&2
+        echo "then $py -m playwright install chromium" >&2
+        return 1
+    }
     "$py" -m pytest -q -m browser
 }
 

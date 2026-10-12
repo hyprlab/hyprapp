@@ -131,3 +131,46 @@ def test_one_file_mode_reports_only_that_file(tmp_path):
 def test_the_report_never_fails(tmp_path):
     code, output = run(tree(tmp_path, {"big.py": lines(31)}), "--report")
     assert code == 0 and "Lines per file" in output and "31  src/big.py" in output
+
+
+def test_functions_the_reviewer_hid_are_found(tmp_path):
+    """Default parameters that call something, class methods, and getters."""
+    body = "".join(f"  if (a{i}) {{ x(); }}\n" for i in range(4))
+    files = {
+        "a.js": f"function hidden(a = make()) {{\n{body}}}\n",
+        "b.mjs": f"class K {{\n  static run(x) {{\n{body}  }}\n  get value() {{\n{body}  }}\n}}\n",
+    }
+    code, output = run(tree(tmp_path, files))
+    assert "hidden() has complexity 5" in output
+    assert "run() has complexity 5" in output and "value() has complexity 5" in output
+
+
+def test_a_template_s_inline_script_is_checked(tmp_path):
+    body = "".join(f"  if (a{i}) {{ x(); }}\n" for i in range(4))
+    page = f'<p>x</p>\n<script>\nfunction busy() {{\n{body}}}\n</script>\n<script src="/a.js"></script>\n'
+    code, output = run(tree(tmp_path, {"page.html": page}))
+    assert code == 1 and "src/page.html:3: busy() has complexity 5" in output
+
+
+def test_shell_scripts_have_a_budget(tmp_path):
+    code, output = run(tree(tmp_path, {"long.sh": "".join(f"echo {i}\n" for i in range(301))}))
+    assert code == 1 and "src/long.sh: 301 lines; the budget for .sh is 300" in output
+
+
+def test_an_exception_needs_a_reason(tmp_path):
+    code, output = run(tree(tmp_path, {"big.py": lines(31)}, '"src/big.py" = ""'))
+    assert code == 1 and "exception 'src/big.py' has no reason" in output
+
+
+def test_the_budgets_and_the_floor_never_loosen():
+    """Raising a budget or lowering the coverage floor means changing this
+    test as well as pyproject.toml, so it can't happen in passing."""
+    import tomllib
+
+    settings = tomllib.loads((ROOT / "pyproject.toml").read_text())
+    checks = settings["tool"]["hyprapp"]["checks"]
+    assert checks["max_lines"] == {"py": 300, "js": 300, "css": 300, "html": 200, "sh": 300}
+    assert (checks["max_function_lines"], checks["max_complexity"], checks["duplicate_lines"]) == (50, 10, 6)
+    assert checks["paths"] == ["."]
+    assert settings["tool"]["coverage"]["report"]["fail_under"] >= 99
+    assert settings["tool"]["coverage"]["run"]["branch"] is True

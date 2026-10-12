@@ -23,9 +23,9 @@ jobs:
       - name: Ruff, code shape, documentation, commit messages
         run: tools/check.sh static
         env:
-          # A pull request's commits are checked; a push has already passed
-          # the hook in the clone it came from.
-          CHECK_BASE: ${{ github.event.pull_request.base.sha || github.sha }}
+          # A pull request's commits, or the commits a push brought: the hook
+          # can be skipped with --no-verify, this can't.
+          CHECK_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
 
   tests:
     needs: static

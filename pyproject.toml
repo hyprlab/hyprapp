@@ -35,7 +35,8 @@ max-complexity = 10
 # What tools/check-code.py enforces, on every commit (tools/git-hooks/pre-commit),
 # in CI, and after each edit Claude Code makes. Raising a budget or adding an
 # exception is an edit here, in the open; never a skip in the code.
-paths = ["hyprapp", "tests", "tools", "run.py"]
+# Every tracked file of a type it reads, wherever it is.
+paths = ["."]
 max_function_lines = 50
 max_complexity = 10
 # A block this many normalized lines long, found twice, is duplication. CSS
@@ -47,6 +48,7 @@ py = 300
 js = 300
 css = 300
 html = 200
+sh = 300
 
 [tool.hyprapp.checks.exceptions]
 # "path" (over its line budget), "path:function" (over a function budget) or
@@ -54,6 +56,8 @@ html = 200
 
 [tool.coverage.run]
 source = ["hyprapp"]
+# Both sides of every branch, not only every line.
+branch = true
 # Measure the Python processes the tests start too: the worker's thread is
 # tested in a fresh interpreter, since it starts once per process.
 patch = ["subprocess"]
