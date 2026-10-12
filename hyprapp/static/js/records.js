@@ -11,7 +11,7 @@ var opener = function () {};
 export function onOpenRecord(fn) { opener = fn; }
 export function openRecord(id) { opener(id); }
 
-export function cardFor(id) {
+function cardFor(id) {
   return recordsRoot && recordsRoot.querySelector('[data-item="' + id + '"]');
 }
 

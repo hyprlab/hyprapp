@@ -26,17 +26,9 @@
 .settings-nav-list { display: flex; flex-direction: column; gap: 2px; }
 .settings-nav-label { margin: 14px 0 6px; padding: 0 10px; }
 .settings-nav-label:first-child { margin-top: 2px; }
-.settings-navitem {
-  display: flex; align-items: center; gap: 11px; width: 100%;
-  padding: 8px 10px; border-radius: var(--radius-sm);
-  font-size: 14px; font-weight: 500; color: var(--muted); text-align: left;
-  transition: background .15s, color .15s;
-}
-.settings-navitem svg { width: 18px; height: 18px; }
+.settings-navitem { width: 100%; text-align: left; }
 .settings-navitem span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .settings-navitem-chev { display: none; }
-.settings-navitem:hover { color: var(--ink); background: var(--hover); }
-.settings-navitem.is-active { color: var(--ink); font-weight: 650; background: var(--selected); }
 .settings-nav-foot { flex: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
 .settings-nav-version { padding: 8px 10px 0; font-size: 11.5px; font-weight: 550; color: var(--faint); }
 
@@ -223,7 +215,5 @@ html[data-theme="light"] .tech-tile-name { color: #000; }
 @media (max-width: 560px) {
   .about-hero { grid-template-columns: 1fr; gap: 16px; }
   .about-brand { align-items: center; text-align: center; }
-}
-@media (max-width: 560px) {
   .theme-picker { flex-direction: column; }
 }

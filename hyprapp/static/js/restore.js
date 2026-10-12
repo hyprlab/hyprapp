@@ -12,6 +12,7 @@
  * address (the sheet's ?open=<id>) and is never restored the other way.
  */
 import { markRestoring } from "./dialogs.js";
+import { openDialogElement } from "./dom.js";
 
 var RESTORE_KEY = "app-dialog";
 var memory = {};
@@ -47,7 +48,7 @@ function watchDialogs() {
   var watcher = new MutationObserver(function (records) {
     records.forEach(function (r) {
       if (r.target.open) topDialog = r.target;
-      else if (topDialog === r.target) topDialog = document.querySelector("dialog[open]");
+      else if (topDialog === r.target) topDialog = openDialogElement();
     });
     rememberDialog();
   });

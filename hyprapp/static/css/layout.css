@@ -18,15 +18,16 @@
 .sidebar-close { display: none; }
 
 .nav-primary { display: flex; flex-direction: column; gap: 2px; }
-.navitem {
+/* A row in a list of places: the sidebar's filters, and the settings rail. */
+.navitem, .settings-navitem {
   display: flex; align-items: center; gap: 11px;
   padding: 8px 10px; border-radius: var(--radius-sm);
   font-size: 14px; font-weight: 500; color: var(--muted);
   transition: background .15s, color .15s;
 }
-.navitem svg { width: 18px; height: 18px; }
-.navitem:hover { color: var(--ink); background: var(--hover); }
-.navitem.is-active { color: var(--ink); font-weight: 650; background: var(--selected); }
+.navitem svg, .settings-navitem svg { width: 18px; height: 18px; }
+.navitem:hover, .settings-navitem:hover { color: var(--ink); background: var(--hover); }
+.navitem.is-active, .settings-navitem.is-active { color: var(--ink); font-weight: 650; background: var(--selected); }
 .navitem .count { margin-left: auto; }
 
 .sidebar-label {
