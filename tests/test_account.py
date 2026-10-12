@@ -1,4 +1,6 @@
 """Per-user preferences (POST /settings) and changing one's own password."""
+import re
+
 import pytest
 
 from hyprapp.models import User
@@ -63,7 +65,7 @@ def test_preferences_render_in_the_appearance_section(client, post, admin):
     html = client.get("/").data.decode()
     assert '<input type="radio" name="theme" value="dark" checked>' in html
     assert '<input type="radio" name="view_mode" value="list" checked>' in html
-    assert '<input type="checkbox" id="infinite-scroll" >' in html
+    assert re.search(r'<input type="checkbox" id="infinite-scroll"\s*>', html)
 
 
 # ———— password ————
