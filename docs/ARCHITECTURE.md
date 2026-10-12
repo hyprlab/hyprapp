@@ -54,6 +54,27 @@ helper, and the JavaScript modules reach each other through small registries
 (`onOpen`, `remember`, `onOpenRecord`) rather than through each other's
 insides.
 
+## Where code goes
+
+| A change | Goes in |
+| --- | --- |
+| A route | The blueprint for its concern: `main.py` (the home page and the worked example), `account.py`, `admin.py`, `auth.py`, `setup.py`, `turnstile.py`, `health.py`. A new blueprint joins `BLUEPRINTS` in `__init__.py`; a new route, `tests/snapshots/routes.txt` |
+| A model or a column | `models.py`; a column on an existing table also needs a migration step |
+| A migration step | The end of `migrate()` in `migrations.py`, inside its `fmt: off` fence |
+| A validation rule or refusal | `validation.py` when more than one route checks it; the route's module otherwise |
+| A per-user setting | See "Code" below; `infinite_scroll` is the worked example |
+| An admin setting | `INSTANCE_SETTINGS` in `admin.py` (see "Code" below) |
+| A settings section | A row in `settings_sections` in `partials/settings.html`, and `partials/settings/<id>.html` |
+| A dialog | A partial in `templates/partials/`, included by `app.html`; its behavior in its JavaScript module |
+| An icon | `icons.py`, drawn with `{{ icon("name") }}` |
+| A JavaScript feature | One module in `static/js/` that guards on its own elements, imported by `app.js` |
+| A style | The stylesheet for its part: `tokens`, `base`, `layout`, `records`, `overlays`, `settings`, `pages` (linked in that order) |
+| A template global or filter | `templating.py` |
+| A request guard or header | `security.py`; error pages in `errors.py` |
+| Periodic work | `_work()` in `worker.py` |
+| A command | `cli.py` |
+| A test | `tests/test_<concern>.py`; behavior in the browser in `tests/browser/`; a deliberate new look, `UPDATE_BASELINES=1` and commit the screenshots |
+
 The sizes are enforced, not hoped for: no file over 300 lines of Python,
 JavaScript or CSS or 200 of a template, no function over 50 lines or
 complexity 10, no block repeated in two places. `tools/check-code.py` checks
@@ -87,9 +108,7 @@ so there is one renderer for the list, not two that drift apart. Nothing is
 compiled, so what is in the repository is what runs. A module imports another
 by a relative path, which carries no version, so `base.html` renders an import
 map that sends each module's URL to its `static_url()` version, and
-`modulepreload` links that fetch the whole graph at once. A static file asked
-for at its current version is cached for a year; a redeploy changes the
-version, and so the URL.
+`modulepreload` links that fetch the whole graph at once.
 
 **Session CSRF, not an extension.** A token in the session goes back as a
 hidden `_csrf` field from forms and an `X-CSRF` header from `fetch`, compared

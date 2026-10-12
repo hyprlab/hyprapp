@@ -124,6 +124,9 @@ image is pushed.
 
 ## Where code goes
 
+The same table is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#where-code-goes),
+which every clone has; change both together.
+
 | A change | Goes in |
 | --- | --- |
 | A route | The blueprint for its concern: `main.py` (the home page and the worked example), `account.py`, `admin.py`, `auth.py`, `setup.py`, `turnstile.py`, `health.py`. A new blueprint joins `BLUEPRINTS` in `__init__.py`; a new route, `tests/snapshots/routes.txt` |

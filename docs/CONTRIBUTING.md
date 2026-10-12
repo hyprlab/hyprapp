@@ -37,25 +37,34 @@ a stage can be run alone (`tools/check.sh static`).
 The pre-commit hook runs the `static` checks but the commit messages, in
 under a second. Claude Code runs `tools/check-code.py` on every file it edits.
 
-**The budgets** are in `pyproject.toml` under `[tool.hyprapp.checks]`: no file
-over 300 lines of Python, JavaScript or CSS or 200 of a template; no function
-over 50 lines or complexity 10; no block of 6 lines repeated in two places;
-every JavaScript import names something its module exports. A file near its
-budget is split by concern, not by line number. Raising a budget, or adding
-an exception, is an edit to that table with its reason, made in the open;
-never a skip in the code.
+**The budgets** are in `pyproject.toml` under `[tool.hyprapp.checks]`, and
+cover every tracked file of the types the checker reads, wherever it is: no
+file over 300 lines of Python, JavaScript, CSS or shell, or 200 of a
+template; no function over 50 lines or complexity 10, including the
+functions in a template's inline scripts; no block of 6 lines repeated in two
+places; every JavaScript import names something its module exports. A file
+near its budget is split by concern, not by line number. An exception is an
+entry in that table with its reason, and the checker refuses one without.
+Raising a budget also means changing `tests/test_check_code.py`, which pins
+them, so it can't happen in passing.
 
-**The coverage floor** is `fail_under` in `pyproject.toml`. It only goes up:
-when coverage rises, raise the floor to the new figure, rounded down; when a
-change would lower it, test the change instead.
+**The coverage floor** is `fail_under` in `pyproject.toml`, measured over
+branches as well as lines. It only goes up: when coverage rises, raise the
+floor to the new figure, rounded down; when a change would lower it, test the
+change instead. The same test pins it.
+
+**The migration steps** that have shipped are pinned in
+`tests/snapshots/migrations.txt`; a new step goes at the end of `migrate()`
+and joins the snapshot when it ships.
 
 **The visual comparison** checks screenshots of every page and settings
 section, at four widths in both themes, against `tests/browser/baselines/`.
 When a change is meant to change the look, run
 `UPDATE_BASELINES=1 .venv/bin/python -m pytest tests/browser/test_visual.py`,
-look at the new screenshots, and commit them with the change. A failure
-writes the new screenshot and a diff to `tests/browser/visual-diffs/`, which
-CI uploads.
+look at the new screenshots, and commit them with the change. A change of
+more than 8 levels in any color, over more than 0.01% of a screenshot, fails.
+A failure writes the new screenshot and a diff to
+`tests/browser/visual-diffs/`, which CI uploads.
 
 ## Commits
 
@@ -133,8 +142,8 @@ renders the changelog, so a skipped section is a gap users see.
 
 ## Code
 
-- Match what is there: one module per concern (CLAUDE.md's "Where code goes"
-  table has the map), blueprints, `refuse()` for the `{"error": "..."}` shape
+- Match what is there: one module per concern ("Where code goes" in
+  [ARCHITECTURE.md](ARCHITECTURE.md#where-code-goes) has the map), blueprints, `refuse()` for the `{"error": "..."}` shape
   of JSON failures, `api()` from `static/js/api.js` for every mutating call.
 - Reuse before writing: look for the helper before writing a second copy, and
   extract one on the second use of a pattern.
