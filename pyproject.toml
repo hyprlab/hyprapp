@@ -21,3 +21,24 @@ ignore = ["SIM300"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 10
+
+[tool.hyprapp.checks]
+# What tools/check-code.py enforces, on every commit (tools/git-hooks/pre-commit),
+# in CI, and after each edit Claude Code makes. Raising a budget or adding an
+# exception is an edit here, in the open; never a skip in the code.
+paths = ["hyprapp", "tests", "tools", "run.py"]
+max_function_lines = 50
+max_complexity = 10
+# A block this many normalized lines long, found twice, is duplication. CSS
+# counts declarations, one per line.
+duplicate_lines = 6
+
+[tool.hyprapp.checks.max_lines]
+py = 300
+js = 300
+css = 300
+html = 200
+
+[tool.hyprapp.checks.exceptions]
+# "path" (over its line budget), "path:function" (over a function budget) or
+# "path:duplicates" (left out of the duplicate search) = "why".
