@@ -17,8 +17,8 @@ All notable changes to Hyprapp are documented here. The format follows
   server. The TURNSTILE_* variables still work as a fresh-install default
 
 ### Changed
-- New and edited records are written in a panel that slides in from the
-  right, full height under the topbar, with the list still in view beside it
+- New and edited records are written in a full-height panel that slides in
+  from the right, with the list still in view beside it
 - The light and dark switch is in the sidebar's footer, beside Settings,
   instead of the top bar
 - The chosen row in the sidebar and in Settings is a rounded grey pill with
