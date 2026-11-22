@@ -20,7 +20,7 @@ All notable changes to Hyprapp are documented here. The format follows
 - The light and dark switch is in the sidebar's footer, beside Settings,
   instead of the top bar
 - The chosen row in the sidebar and in Settings is a rounded grey pill with
-  a short yellow bar beside it, instead of a bar along its edge
+  a short yellow bar against its left side, instead of a bar along its edge
 - Backgrounds, borders and text are neutral greys in both themes, without
   the yellow tint of the light theme or the blue of the dark
 - The dark theme is lighter: charcoal backgrounds instead of near-black, with

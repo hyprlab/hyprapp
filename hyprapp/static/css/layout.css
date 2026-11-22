@@ -44,11 +44,11 @@
 .sideitem:hover { color: var(--ink); background: var(--hover); }
 .sideitem.is-active { color: var(--ink); font-weight: 600; background: var(--selected); }
 /* The chosen row in the sidebar and settings: the grey pill, with a short
-   rounded accent bar standing just outside its left edge. The scrolling
+   rounded accent bar touching its left edge from outside. The scrolling
    lists lend their rows 10px of side padding so the bar isn't clipped. */
 .navitem, .sideitem, .settings-navitem { position: relative; }
 .navitem.is-active::before, .sideitem.is-active::before, .settings-navitem.is-active::before {
-  content: ""; position: absolute; left: -4px; top: 20%; bottom: 20%;
+  content: ""; position: absolute; left: -3px; top: 20%; bottom: 20%;
   width: 3px; border-radius: 99px; background: var(--accent);
 }
 .sideitem-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
