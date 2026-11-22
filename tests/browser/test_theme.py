@@ -82,8 +82,12 @@ def test_the_theme_choices_in_settings(page, api):
     expect(page.locator('input[name="theme"][value="dark"]')).to_be_checked()
 
 
-@pytest.mark.parametrize("where", [".topbar", ".sidebar-foot"])
-def test_the_switches_flip_and_remember(page, api, where):
+def test_the_topbar_has_no_switch(page):
+    expect(page.locator(".topbar").get_by_role("button", name="Toggle theme")).to_have_count(0)
+
+
+def test_the_switch_flips_and_remembers(page, api):
+    where = ".sidebar-foot"
     switch = page.locator(where).get_by_role("button", name="Toggle theme")
     expect(page.locator(where + " .icon-moon")).to_be_visible()
     expect(page.locator(where + " .icon-sun")).to_be_hidden()

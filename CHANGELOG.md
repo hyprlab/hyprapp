@@ -7,8 +7,6 @@ All notable changes to Hyprapp are documented here. The format follows
 ## Unreleased
 
 ### Added
-- A light and dark switch in the sidebar's footer, beside Settings, as well
-  as the one in the top bar
 - Reloading the page brings back the dialog that was open, as it was: the
   settings section and its scroll position, a record being written or edited,
   the search and its results, an open record. Arriving at the page any other
@@ -19,6 +17,8 @@ All notable changes to Hyprapp are documented here. The format follows
   server. The TURNSTILE_* variables still work as a fresh-install default
 
 ### Changed
+- The light and dark switch is in the sidebar's footer, beside Settings,
+  instead of the top bar
 - The chosen row in the sidebar and in Settings is a rounded grey pill with
   a short yellow bar beside it, instead of a bar along its edge
 - Backgrounds, borders and text are neutral greys in both themes, without
