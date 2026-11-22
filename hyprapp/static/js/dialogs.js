@@ -1,5 +1,5 @@
 /* Every <dialog>: opening by [data-open], closing by [data-close], Escape or
- * a click on the backdrop, and the sheet's exit animation. A dialog that
+ * a click on the backdrop, and the exit animations. A dialog that
  * needs setting up first registers it with onOpen(). */
 import { prefersReducedMotion } from "./dom.js";
 import { setSidebar } from "./sidebar.js";
@@ -11,10 +11,13 @@ export function onOpen(id, fn) { openHooks[id] = fn; }
 
 export function openDialog(id, section) {
   var dialog = document.getElementById(id);
-  if (!dialog || dialog.open) return;
+  if (!dialog) return;
+  var leaving = dialog.classList.contains("is-closing");
+  if (dialog.open && !leaving) return;
   if (openHooks[id]) openHooks[id](dialog, section);
   setSidebar(false);
-  dialog.showModal();
+  if (leaving) cancelExit(dialog);   // asked for again while sliding out: stay
+  else dialog.showModal();
 }
 
 // Delegated, so buttons that arrive later (an empty state re-rendered by
@@ -24,24 +27,29 @@ document.addEventListener("click", function (e) {
   if (btn) openDialog(btn.getAttribute("data-open"), btn.getAttribute("data-settings-section"));
 });
 
-// The sheet slides back out through the top before it actually closes, so
-// every way of dismissing it routes through here (button, backdrop, Escape).
-var SHEET_EXIT_MS = 300;   // keep in step with the sheet-out animation
-var sheetExitTimer = null;
+// A dialog marked data-exit (the sheet, the slideout) animates out before it
+// actually closes, so every way of dismissing it routes through here (button,
+// backdrop, Escape).
+var EXIT_MS = 300;   // keep in step with the sheet-out and slideout-out animations
+function cancelExit(dialog) {
+  clearTimeout(dialog.exitTimer);
+  dialog.classList.remove("is-closing");
+}
 export function closeDialog(dialog, then) {
-  if (dialog.id !== "sheet" || prefersReducedMotion()) {
+  if (!dialog.hasAttribute("data-exit") || prefersReducedMotion()) {
     dialog.close();
     if (then) then();
     return;
   }
   if (dialog.classList.contains("is-closing")) return;
   dialog.classList.add("is-closing");
-  clearTimeout(sheetExitTimer);
-  sheetExitTimer = setTimeout(function () {
+  // Keys pressed while it slides out are the page's, not its fields'.
+  if (dialog.contains(document.activeElement)) document.activeElement.blur();
+  dialog.exitTimer = setTimeout(function () {
     dialog.classList.remove("is-closing");
     dialog.close();
     if (then) then();
-  }, SHEET_EXIT_MS);
+  }, EXIT_MS);
 }
 
 export function markRestoring(d) {
@@ -80,7 +88,7 @@ document.querySelectorAll("dialog").forEach(function (dialog) {
   dialog.querySelectorAll("[data-close]").forEach(function (btn) {
     btn.addEventListener("click", function () { closeDialog(dialog); });
   });
-  if (dialog.id === "sheet") {
+  if (dialog.hasAttribute("data-exit")) {
     dialog.addEventListener("cancel", function (e) {   // Escape
       e.preventDefault();
       closeDialog(dialog);

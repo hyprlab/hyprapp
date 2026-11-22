@@ -18,7 +18,8 @@ file's rules may override the ones before it. Icons are inline SVG, drawn by
   page, `--panel` for the sidebar and quiet containers, `--surface` for cards
   and dialogs, `--field` for inputs.
 - **Motion explains where something went.** The sheet rises in from below and
-  leaves through the top, toward the toast that confirms what happened. Every
+  leaves through the top, toward the toast that confirms what happened. The
+  record form slides in from the right and leaves the same way. Every
   animation is off under `prefers-reduced-motion`.
 - **Nothing shifts.** List rows keep their grid cells when a marker hides; the
   settings window keeps its size between sections; the scrollbar gutter is
@@ -74,6 +75,7 @@ Long-form text uses `.prose` at 16.5px and 1.72.
 | `.empty`, `.pager`, `.pager-end` | Empty states and paging |
 | `.modal`, `.modal--wide`, `.modal-head`, `.modal-body` | Dialogs, built on `<dialog>` |
 | `.settings`, `.settings-nav`, `.settings-navitem`, `.settings-head`, `.settings-pane` | The settings window: a rail of sections beside the chosen one; on phones a list that slides into each section |
+| `.slideout`, `.field--grow` | The record form: a panel down the right edge under the topbar, 40% of the window (the full width on phones), whose notes take the height left. Its dialog carries `data-exit` for the exit animation. |
 | `.sheet`, `.sheet-bar`, `.sheet-article`, `.prose` | The full-height detail view |
 | `.palette` and its parts | The Ctrl/Cmd+K search |
 | `.toast`, `.toast--error`, `.toast-action` | Confirmations under the topbar, with an optional action such as Undo in the accent: a dark pill in the light theme, a raised charcoal one in the dark, and a red one for an error in each |

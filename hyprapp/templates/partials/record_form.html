@@ -1,6 +1,6 @@
 {% from "partials/buttons.html" import close_button %}
 <!-- ————— New / edit record ————— -->
-<dialog class="modal" id="item-modal">
+<dialog class="slideout" id="item-modal" data-exit>
   <div class="modal-head">
     <h3 id="item-modal-title">New record</h3>
     {{ close_button() }}
@@ -11,7 +11,7 @@
       <span class="field-label">Title</span>
       <input id="item-title" maxlength="300" autocomplete="off" required autofocus>
     </label>
-    <label class="field">
+    <label class="field field--grow">
       <span class="field-label">Notes</span>
       <textarea id="item-body" rows="5" placeholder="Anything worth keeping with it."></textarea>
     </label>

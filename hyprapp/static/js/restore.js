@@ -22,7 +22,9 @@ export function remember(id, pair) { memory[id] = pair; }
 
 function rememberDialog() {
   try {
-    if (!topDialog || !topDialog.open || topDialog.getAttribute("data-restore") === "off") {
+    // A dialog in its exit animation is already closed as far as a person knows.
+    if (!topDialog || !topDialog.open || topDialog.classList.contains("is-closing") ||
+        topDialog.getAttribute("data-restore") === "off") {
       sessionStorage.removeItem(RESTORE_KEY);
       return;
     }

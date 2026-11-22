@@ -183,6 +183,13 @@ def _phone_sheet(page):
     expect(page.locator("#sheet-title")).to_have_text("Read the field guide")
 
 
+@shot("phone-record-form", viewport=PHONE)
+def _phone_form(page):
+    page.goto("/")
+    page.keyboard.press("n")
+    page.fill("#item-title", "A new record")
+
+
 @shot("phone-settings", viewport=PHONE)
 def _phone_settings(page):
     page.goto("/")

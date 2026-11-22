@@ -17,6 +17,8 @@ All notable changes to Hyprapp are documented here. The format follows
   server. The TURNSTILE_* variables still work as a fresh-install default
 
 ### Changed
+- New and edited records are written in a panel that slides in from the
+  right, full height under the topbar, with the list still in view beside it
 - The light and dark switch is in the sidebar's footer, beside Settings,
   instead of the top bar
 - The chosen row in the sidebar and in Settings is a rounded grey pill with
@@ -45,6 +47,8 @@ All notable changes to Hyprapp are documented here. The format follows
   right. On a phone it opens as a list, and each section has a Back button
 
 ### Fixed
+- Undo on the toast after deleting a record from its open view stays on
+  screen; with animations on it used to vanish along with the view
 - The Claude Code guard hook refuses a push whose commits carry AI
   attribution however long the history is; before, `grep -q` ended the pipe
   early and, under `pipefail`, the check passed

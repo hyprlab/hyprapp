@@ -33,8 +33,7 @@ def test_done_and_pin_from_the_sheet(page, api):
 def test_delete_with_undo(new_page, api):
     api.item("Keep me")
     api.item("Doomed", body="Its body", pinned=True)
-    # Reduced motion: see the next test for why the Undo needs it.
-    page = new_page(api, reduced_motion="reduce")
+    page = new_page(api)
     page.goto("/")
     open_record(page, "Doomed")
     page.locator("#sheet-delete").click()
@@ -48,17 +47,16 @@ def test_delete_with_undo(new_page, api):
     expect(card(page, "Doomed").locator(".pinbtn")).to_have_class(re.compile(r"\bis-pinned\b"))
 
 
-def test_with_motion_the_undo_toast_leaves_with_the_sheet(page, api):
-    """A bug the refactor keeps (see the final report): the toast is raised
-    while the sheet is still open during its exit animation, so it is placed
-    inside the sheet and closes with it, and Undo can't be reached."""
+def test_with_motion_the_undo_toast_outlives_the_sheet(page, api):
+    """The toast is raised while the sheet is still sliding out; it goes on the
+    page, not into the leaving sheet, so Undo stays in reach."""
     api.item("Doomed")
     page.reload()
     open_record(page, "Doomed")
     page.locator("#sheet-delete").click()
     expect(page.locator("#sheet")).to_be_hidden()
-    assert page.evaluate("document.getElementById('toast').parentNode.id") == "sheet"
-    expect(page.locator("#toast")).to_be_hidden()
+    assert page.evaluate("document.getElementById('toast').parentNode === document.body")
+    expect(page.locator("#toast").get_by_role("button", name="Undo")).to_be_visible()
 
 
 def test_a_delete_left_alone_stays_deleted(page, api):

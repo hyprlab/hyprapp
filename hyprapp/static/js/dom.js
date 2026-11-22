@@ -4,8 +4,9 @@ export function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
+// The dialog a person sees as open: one sliding out has already gone.
 export function openDialogElement() {
-  return document.querySelector("dialog[open]");
+  return document.querySelector("dialog[open]:not(.is-closing)");
 }
 
 // A key press that is the app's to handle: not typed into a field, and not
